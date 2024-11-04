@@ -1,0 +1,249 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>初级网络技术5 | yawataa的安全学习博客</title><meta name="author" content="yawataa"><meta name="copyright" content="yawataa"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="我们继续讲ip地址 Ip地址的数量为：2*n-2（其中n位主机位数） Ip地址的范围为网络地址+1，主机地址-1 网络地址为网络位不变，主机位全为0，主机地址为：网络位不变，主机地址全为1。   Ip地址的分类（按类型分） A类（8位网络位，24位主机位），一般用在数据中心 固定头位为0 0.0.0.0-127.255.255.255 B****类 16位网络位，16位主机位 学校 固定头位10">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初级网络技术5">
+<meta property="og:url" content="http://example.com/2024/11/04/%E5%88%9D%E7%BA%A7%E7%BD%91%E7%BB%9C%E6%8A%80%E6%9C%AF5/index.html">
+<meta property="og:site_name" content="yawataa的安全学习博客">
+<meta property="og:description" content="我们继续讲ip地址 Ip地址的数量为：2*n-2（其中n位主机位数） Ip地址的范围为网络地址+1，主机地址-1 网络地址为网络位不变，主机位全为0，主机地址为：网络位不变，主机地址全为1。   Ip地址的分类（按类型分） A类（8位网络位，24位主机位），一般用在数据中心 固定头位为0 0.0.0.0-127.255.255.255 B****类 16位网络位，16位主机位 学校 固定头位10">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png">
+<meta property="article:published_time" content="2024-11-04T15:31:00.000Z">
+<meta property="article:modified_time" content="2024-11-04T15:36:32.438Z">
+<meta property="article:author" content="yawataa">
+<meta property="article:tag" content="初级网络技术学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2024/11/04/%E5%88%9D%E7%BA%A7%E7%BD%91%E7%BB%9C%E6%8A%80%E6%9C%AF5/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '初级网络技术5',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2024-11-04 23:36:32'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="yawataa的安全学习博客"><span class="site-name">yawataa的安全学习博客</span></a></span><div id="menus"><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">初级网络技术5</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-11-04T15:31:00.000Z" title="发表于 2024-11-04 23:31:00">2024-11-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-11-04T15:36:32.438Z" title="更新于 2024-11-04 23:36:32">2024-11-04</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="初级网络技术5"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>我们继续讲ip地址</p>
+<p>Ip地址的数量为：2*n-2（其中n位主机位数）</p>
+<p>Ip地址的范围为网络地址+1，主机地址-1</p>
+<p>网络地址为网络位不变，主机位全为0，主机地址为：网络位不变，主机地址全为1。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/yawataa.imge@master/image/%E7%BD%91%E7%BB%9C%E5%9C%B0%E5%9D%80.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/yawataa.imge@master/image/ip%E5%9C%B0%E5%9D%80%E6%95%B0%E9%87%8F.png"></p>
+<p><strong>Ip地址的分类（按类型分</strong>）</p>
+<p><strong>A类（8位网络位，24位主机位），一般用在数据中心</strong></p>
+<p><strong>固定头位为0</strong></p>
+<p>0.0.0.0-127.255.255.255</p>
+<p><strong>B****类 16位网络位，16位主机位 学校</strong></p>
+<p>固定头位10 范围128.0.0.0-223.255.255.255 b类网段</p>
+<p><strong>C****类：网络位 24 主机位8</strong></p>
+<p>固定头部为110，范围 192.0.0.0-223.255.255.255 家庭网络</p>
+<p>A,B,C三类一般拿来给人们正常使用</p>
+<p>d类组播</p>
+<p>E类保留做科研</p>
+<p><strong>Ip地址的分类（按公有和私有分）</strong></p>
+<p><strong>私有ip：</strong></p>
+<p>10.0.0.0-10.255.255.255</p>
+<p>172.16.0.0-172.31.255.255</p>
+<p>192.168.0.0-192.168.255.255</p>
+<p><strong>特殊ip</strong>:127.0.0.1–127.255.255 本地测试地址</p>
+<p>0.0.0.0代表全网</p>
+<p>255.255.255.255 代表0.0.0.0的广播 </p>
+<p>除了这些就是私有ip</p>
+<p>划分子网：为什么要划分子网？有类ip编址的缺陷：会造成地址的浪费</p>
+<p>比如说我这个公司只需要30个人通信，但是24个网络位8个主机位这种方式，有254个科研ip明细多余的ip就浪费了。</p>
+<p>我们现在用的ip地址，是无类的ip地址</p>
+<p><strong>子网划分的方法：（网络位向主机位借位）</strong></p>
+<p>等分法划分ip，化出来的可用ip数都一样</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/yawataa.imge@master/image/%E7%AD%89%E5%88%86%E6%B3%95%E5%88%92%E5%88%86ip.png"></p>
+<p>分蛋糕法：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/yawataa.imge@master/image/%E5%88%86%E8%9B%8B%E7%B3%95%E6%B3%95.png"></p>
+<p><strong>作业：</strong></p>
+<p><strong>A：350   B:158   C:88   D:68</strong></p>
+<p><strong>192.168.159.1&#x2F;22—变成网段</strong></p>
+<p><strong>首先看见这个是用分蛋糕法，因为ip数相差很大。</strong></p>
+<p><strong>第一步，先把这个ip变成网段（主机位全变为0）</strong></p>
+<p><strong>192.168.1001 11  11. 0000 0000</strong></p>
+<p><strong>网段：192.168.1001 11  00.0000 0000</strong></p>
+<p><strong>最大数为350 和2*9-2&#x3D;510相近，所以需要23个网络位，9</strong></p>
+<p><strong>个主机位</strong></p>
+<p><strong>借一位：192.168.1001 11 0   0.0000 0000&#x2F;23 –&gt;拿给A 350分</strong></p>
+<p><strong>192.168.1001 11 1   0.0000 0000&#x2F;23–&gt;留着继续划分。</strong></p>
+<p><strong>192.168.1001 11 1 0.   0000 0000&#x2F;24 –&gt;再借一位，给B 158分 2*8-2&#x3D;254</strong></p>
+<p><strong>192.168.1001 111 1.    0000 0000&#x2F;24 –&gt;继续划分</strong> </p>
+<p><strong>192.168.1001 1111 .0    000 0000&#x2F;25 –&gt;借一位给C 88划分 2*7-2&#x3D;126</strong></p>
+<p><strong>192.168.1001 1111.1 0    00 0000&#x2F;25  剩下的给 D 68划分了</strong></p>
+<p><strong>总结：A ：192.168.156.0&#x2F;23</strong></p>
+<p><strong>B:192.168.158.0&#x2F;24</strong></p>
+<p><strong>C:192.168.159.0&#x2F;25</strong></p>
+<p><strong>D:192.168.159.128&#x2F;25</strong></p>
+<p><strong>网线的制作****：</strong></p>
+<p><strong>网线：物理层用于传输的介质，企业里面路由器与路由器，交换机与交换机，交换机与路由器，路由器与终端，这些都是用网线连接，大企业有些<strong><strong>用</strong></strong>光纤（效果更好）</strong></p>
+<p><strong>同轴电缆（单向传输，分为粗同轴电缆-500米，细同轴电缆–185米</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/yawataa.imge@master/image/%E5%90%8C%E8%BD%B4%E7%94%B5%E7%BC%86.png"></p>
+<p><strong>双绞线：网线，有效距离都为100，因为介质都为铜，电阻导致的距离都相差不大，100米左右，这也是网线不用在广域网的原因。</strong></p>
+<p><strong>现在用的网线是超5类，超六类，区别就是超六类的传输数据更大一些。</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/yawataa.imge@master/image/%E7%BD%91%E7%BA%BF.jpg"></p>
+<p><strong>光纤最大长度能达到2000米，每隔2000米经过一个交换机或路由器或信号放大器，放大电频</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/yawataa.imge@master/image/%E5%85%89%E8%BF%81.png"></p>
+<p><strong>串口电缆：现在基本没用，老式打印机，制造企业可能还有</strong> </p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/yawataa.imge@master/image/%E4%B8%B2%E5%8F%A3%E7%94%B5%E7%BC%86.png"></p>
+<p><strong>网线：线序分为ab线序，线序如果为a两端都要a，如果为b线序，两端都要为b线序</strong></p>
+<p><strong>我们现在常用的就是b线序</strong></p>
+<p><strong>橙白 橙 绿白 蓝 蓝白 绿 棕白 棕</strong></p>
+<p><strong>华为设备的配置基础命令</strong></p>
+<p>*<em>设备</em><em><strong>都有</strong></em><em>两部分组成 硬件和操作系统–</em>***&gt;**<strong>控制硬件对数据进行处理</strong></p>
+<p><strong>华为的操作系统就叫VRP（基于linux系统二次开发的），设备AR（router）开头路由器，s（switch）开头交换机，</strong></p>
+<p><strong>网络设备控制：</strong></p>
+<ol>
+<li><strong>将console线连接在路由器交换机console口上和电脑上</strong></li>
+</ol>
+<p><strong>2.打开计算机管理，找到设备管理器，找到端口</strong></p>
+<p><strong>3.打开moba，选择Session，再选择Serial，再选择串口端口com几和传输速率</strong></p>
+<p><strong>连接成功后输入账号或密码</strong></p>
+<p>!(<a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/gh/yawataa/yawataa.imge@master/image/%E5%B1%95%E7%A4%BA.png">https://cdn.jsdelivr.net/gh/yawataa/yawataa.imge@master/image/%E5%B1%95%E7%A4%BA.png</a>)</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/yawataa.imge@master/image/%E5%B1%95%E7%A4%BA.png"></p>
+<p><strong>登进去，用户视图</strong></p>
+<p><strong>&#x2F;&#x2F;用户视图–&gt;一般啥也干不了</strong></p>
+<p><strong>system-view(这条命令进入系统视图，sys按tab可补全)</strong></p>
+<p><strong>进入接口视图，因为要给接口配置ip地址</strong></p>
+<p><strong>int g0&#x2F;0&#x2F;0（进入0号接口）</strong></p>
+<p><strong>[huawei-GigabitEthernet0&#x2F;0&#x2F;0]</strong></p>
+<p><strong>ip aderess 192.168.1.1(ip地址)  255.255.255.0（网段）</strong></p>
+<p><strong>quit(离开当前，去往上一级)</strong></p>
+<p><strong>sysname r1  &#x2F;&#x2F;修改名字r1</strong></p>
+<p><strong>display this 展现当前配置情况****）</strong></p>
+<p><strong>比如（所用ensp华为设备模拟器）</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/yawataa.imge@master/image/%E9%85%8D%E7%BD%AEr1.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/yawataa.imge@master/image/%E9%85%8D%E7%BD%AEr2.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/yawataa.imge@master/image/%E8%BF%9E%E6%8E%A5%E6%88%90%E5%8A%9F.png"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">yawataa</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2024/11/04/%E5%88%9D%E7%BA%A7%E7%BD%91%E7%BB%9C%E6%8A%80%E6%9C%AF5/">http://example.com/2024/11/04/%E5%88%9D%E7%BA%A7%E7%BD%91%E7%BB%9C%E6%8A%80%E6%9C%AF5/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">yawataa的安全学习博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%88%9D%E7%BA%A7%E7%BD%91%E7%BB%9C%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0/">初级网络技术学习</a></div><div class="post_share"><div class="social-share" data-image="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/11/04/%E5%88%9D%E7%BA%A7%E7%BD%91%E7%BB%9C%E6%8A%80%E6%9C%AF4/" title="初级网络技术4"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">初级网络技术4</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">yawataa</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/11/04/%E5%88%9D%E7%BA%A7%E7%BD%91%E7%BB%9C%E6%8A%80%E6%9C%AF5/" title="初级网络技术5">初级网络技术5</a><time datetime="2024-11-04T15:31:00.000Z" title="发表于 2024-11-04 23:31:00">2024-11-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/11/04/%E5%88%9D%E7%BA%A7%E7%BD%91%E7%BB%9C%E6%8A%80%E6%9C%AF4/" title="初级网络技术4">初级网络技术4</a><time datetime="2024-11-04T15:27:51.000Z" title="发表于 2024-11-04 23:27:51">2024-11-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/11/04/%E5%88%9D%E7%BA%A7%E7%BD%91%E7%BB%9C%E6%8A%80%E6%9C%AF3/" title="初级网络技术3">初级网络技术3</a><time datetime="2024-11-04T15:21:54.000Z" title="发表于 2024-11-04 23:21:54">2024-11-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/10/25/%E5%88%9D%E7%BA%A7%E7%BD%91%E7%BB%9C%E6%8A%80%E6%9C%AF2/" title="初级网络技术2">初级网络技术2</a><time datetime="2024-10-25T13:04:31.000Z" title="发表于 2024-10-25 21:04:31">2024-10-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/10/20/%E5%88%9D%E7%BA%A7%E7%BD%91%E7%BB%9C%E6%8A%80%E6%9C%AF1/" title="初级网络技术1">初级网络技术1</a><time datetime="2024-10-20T03:06:47.000Z" title="发表于 2024-10-20 11:06:47">2024-10-20</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By yawataa</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script defer src="/live2d-widget/autoload.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
