@@ -4,6 +4,25 @@
   
   
   <entry>
+    <title>《有意思的右键菜单权限维持》</title>
+    <link href="/2025/10/15/%E3%80%8A%E6%9C%89%E6%84%8F%E6%80%9D%E7%9A%84%E5%8F%B3%E9%94%AE%E8%8F%9C%E5%8D%95%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81%E3%80%8B/"/>
+    <url>/2025/10/15/%E3%80%8A%E6%9C%89%E6%84%8F%E6%80%9D%E7%9A%84%E5%8F%B3%E9%94%AE%E8%8F%9C%E5%8D%95%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81%E3%80%8B/</url>
+    
+    <content type="html"><![CDATA[<h1 id="简单介绍"><a href="#简单介绍" class="headerlink" title="简单介绍"></a>简单介绍</h1><p>上下文菜单为用户提供快捷方式以执行许多操作。单击鼠标右键，对于每个Windows用户来说这是一个非常常见的操作。在红队视角中，我们可以让用户每次单击右键鼠标时都可以执行shellcode，将此操作武器化以实现持久性</p><p><code>IShellExtInit</code>和<code>IContextMenu</code>是 Windows API 中的接口，允许开发人员扩展 Windows shell 并将自定义功能添加到当用户在 Windows 资源管理器或桌面中右键单击文件或文件夹时出现的上下文菜单。</p><p>具体的代码可以看这个项目</p><p><a href="https://github.com/RistBS/ContextMenuHijack">RistBS&#x2F;ContextMenuHijack: Execute a payload at each right click on a file&#x2F;folder in the explorer menu for persistence</a></p><p>我们现在直接开始演示就可以了</p><p>下载好项目，箭头指向的就是放shellcode的地方</p><p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202510151430200.png" alt="image-20251015142955960"></p><p>同时下面就是运行shellcode的加载器，可以看到是很简单的一个运行方式，我们也可以自己进行修改。保证免杀性，比如内存映射加载还有伪造父进程这些。</p><p>填好直接生成就可以了</p><p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202510151432791.png" alt="image-20251015143247717"></p><p>然后就是加载这个dll,这里加载dll的手法就多种多样了。可以看看我之前的博客文章，我们就用最基础的</p><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs nginx"><span class="hljs-attribute">regsvr32</span> ContextMenuHijack.dll<br></code></pre></td></tr></table></figure><p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202510151436724.png" alt="image-20251015143615675"></p><p>现在只要点击鼠标右键就会上线一次</p><p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202510151437688.png" alt="image-20251015143730585"></p><p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202510151437916.png" alt="image-20251015143739871"></p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>权限维持</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>《ProcessBreakOnTermination与ThreadBreakOnTermination》</title>
     <link href="/2025/10/08/%E3%80%8AProcessBreakOnTermination%E4%B8%8EThreadBreakOnTermination%E3%80%8B/"/>
     <url>/2025/10/08/%E3%80%8AProcessBreakOnTermination%E4%B8%8EThreadBreakOnTermination%E3%80%8B/</url>
