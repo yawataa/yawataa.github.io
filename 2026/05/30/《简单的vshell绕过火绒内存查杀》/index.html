@@ -1,0 +1,863 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="1.起因好久没有做vshell的免杀了，一直在做的是cobalt strike的免杀，因为算是第一个接触的C2我个人也是比较有念旧情节的，就一直没有换。 但是最近在帮朋友做免杀的时候发现了一个事情，vshell能正常上线 但是执行命令的时候会被秒杀，本着在学校没有事情做的原理，就研究一下吧。 2.开始首先火绒内存查杀 高级设置全部打开  首先我们上线一个vshell，观察一下情况  我们可以看到">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《简单的vshell绕过火绒内存查杀》">
+<meta property="og:url" content="http://example.com/2026/05/30/%E3%80%8A%E7%AE%80%E5%8D%95%E7%9A%84vshell%E7%BB%95%E8%BF%87%E7%81%AB%E7%BB%92%E5%86%85%E5%AD%98%E6%9F%A5%E6%9D%80%E3%80%8B/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="1.起因好久没有做vshell的免杀了，一直在做的是cobalt strike的免杀，因为算是第一个接触的C2我个人也是比较有念旧情节的，就一直没有换。 但是最近在帮朋友做免杀的时候发现了一个事情，vshell能正常上线 但是执行命令的时候会被秒杀，本着在学校没有事情做的原理，就研究一下吧。 2.开始首先火绒内存查杀 高级设置全部打开  首先我们上线一个vshell，观察一下情况  我们可以看到">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291553736.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435817.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435365.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291555828.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291556127.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435460.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435963.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435221.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435252.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435677.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435712.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435801.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301434881.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301434919.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301434900.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301434871.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291641550.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291642466.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291644861.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435788.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435684.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291653402.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435442.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435562.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291657166.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435105.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291720231.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435129.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435229.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435187.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435085.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291724839.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291728392.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435557.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291749000.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435601.png">
+<meta property="article:published_time" content="2026-05-30T06:33:25.000Z">
+<meta property="article:modified_time" content="2026-05-30T06:38:19.455Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="免杀">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291553736.png">
+  
+  
+  
+  <title>《简单的vshell绕过火绒内存查杀》 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>yawataa</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>Links</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/sun.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="《简单的vshell绕过火绒内存查杀》"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-05-30 14:33" pubdate>
+          May 30, 2026 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.9k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">《简单的vshell绕过火绒内存查杀》</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="1-起因"><a href="#1-起因" class="headerlink" title="1.起因"></a>1.起因</h1><p>好久没有做vshell的免杀了，一直在做的是cobalt strike的免杀，因为算是第一个接触的C2我个人也是比较有念旧情节的，就一直没有换。</p>
+<p>但是最近在帮朋友做免杀的时候发现了一个事情，vshell能正常上线 但是执行命令的时候会被秒杀，本着在学校没有事情做的原理，就研究一下吧。</p>
+<h1 id="2-开始"><a href="#2-开始" class="headerlink" title="2.开始"></a>2.开始</h1><p>首先火绒内存查杀 高级设置全部打开</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291553736.png" srcset="/img/loading.gif" lazyload alt="image-20260529155330674"></p>
+<p>首先我们上线一个vshell，观察一下情况</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435817.png" srcset="/img/loading.gif" lazyload alt="image-20260529155002125"></p>
+<p>我们可以看到 shellcode的生成并不像cobaltstrike那样存在stager和stagerless的选项，只有固定的一个stager。</p>
+<p>我们申请tcp的监听器的，shellcode进行上线</p>
+<p>实际测试文件管理操作不会被动态查杀</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435365.png" srcset="/img/loading.gif" lazyload alt="image-20260529155517255"></p>
+<p>截屏操作不会被查杀</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291555828.png" srcset="/img/loading.gif" lazyload alt="image-20260529155540747"></p>
+<p>屏幕操作不会被查杀</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291556127.png" srcset="/img/loading.gif" lazyload alt="image-20260529155607039"></p>
+<p>当我们点击交互命令的时候，就会秒删</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435460.png" srcset="/img/loading.gif" lazyload alt="image-20260529155721906"></p>
+<p>点击非交互式的时候 则会发现执行一个命令过后就会被删除</p>
+<h1 id="3-简单探测"><a href="#3-简单探测" class="headerlink" title="3.简单探测"></a>3.简单探测</h1><p>通过上面试验的规则我们应该大概了解了一些情况 执行命令的时候会被删除。那么到底是为什么呢？？</p>
+<p>我们再次研究一下</p>
+<p>首先关闭火绒（看看马子运行原理），看看这两个交互式和非交互式具体做了什么</p>
+<h2 id="交互式"><a href="#交互式" class="headerlink" title="交互式"></a>交互式</h2><p>我们使用SystemInformer.exe 查看进程属性，发现当启动交互终端的时候创建了一个子进程 winpty-agent.exe </p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435963.png" srcset="/img/loading.gif" lazyload alt="image-20260529160215969"></p>
+<p>可以发现放在了临时目录下</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435221.png" srcset="/img/loading.gif" lazyload alt="image-20260529160414320"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435252.png" srcset="/img/loading.gif" lazyload alt="image-20260529160440106"></p>
+<p>至于这个到底是什么？？这个是一个开源的项目，网上也有很多介绍，我就不多赘述了</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/rprichard/winpty">https://github.com/rprichard/winpty</a></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435677.png" srcset="/img/loading.gif" lazyload alt="image-20260529160715027"></p>
+<p>关闭终端则这个进程关闭</p>
+<h2 id="非交互式"><a href="#非交互式" class="headerlink" title="非交互式"></a>非交互式</h2><p>我们使用非交互式执行命令的时候，则没有这个进程</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435712.png" srcset="/img/loading.gif" lazyload alt="image-20260529161003965"></p>
+<p>这就证明是这个上线的agent充当了执行的终端</p>
+<p>查看内存属性</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435801.png" srcset="/img/loading.gif" lazyload alt="image-20260529161130961"></p>
+<p>我们执行查看内存属性会发现，rwx两片 rx一片 并且这里没有物理文件支撑，很大概率就是我们的马子了</p>
+<p>第一片rwx属性是Mapped代表的是共享的，这是我们小马存放的地址，为什么呢？因为我的加载器就是申请的映射内存然后写入执行的。</p>
+<p>第二片属性是private私有的，并且点开一看</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301434881.png" srcset="/img/loading.gif" lazyload alt="image-20260529161423419"></p>
+<p>4d5a(MZ标志) 5045(PE标志)，就是一个PE头特征，妥妥的PE结构啊 这里应该就是大马的位置了。</p>
+<p>后面我拿ida-mcp配合claude逆向这个内存，发现确实是大马，并且里面一堆特征，比如有关oss的字符串，还有那个开源终端，全部能逆向出来。</p>
+<p>这片内存是一个很敏感的内存，为什么呢？这就是杀软和edr的一个最基本的检测了，详细可以看鸭哥的文章</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301434919.png" srcset="/img/loading.gif" lazyload alt="image-20260529162121346"></p>
+<h1 id="4-确定思路"><a href="#4-确定思路" class="headerlink" title="4.确定思路"></a>4.确定思路</h1><p>现在思路就很明确了 交互式是上传一个终端程序，非交互式是自己上线的agent来做命令执行。</p>
+<p>再加上 vshell的一个不开源的 go语言编译的（很难逆向），所以我不能改他上传终端那个逻辑，而是选择改内存。</p>
+<p>那到底怎么做内存免杀呢？cs那里用的是sleepmask，在鹏瑶大佬的udrl发展那个议题中介绍了一些c2的演进在这里面也介绍了一下手法。鸭哥的文章也有介绍一下手法</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301434900.png" srcset="/img/loading.gif" lazyload alt="image-20260529162609784"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301434871.png" srcset="/img/loading.gif" lazyload alt="image-20260529162756910"></p>
+<p>当然火绒不需要这么费力，本着轻量级的，让用户良好体验的，火绒没有hook机制，也没有堆栈检测机制。</p>
+<p>（当然我也只是一个小白，哪里说错了，大佬们也多多包涵）。</p>
+<p>我一开始的思路就是找到大内存那片地址，然后抹除PE头就可以了。</p>
+<p>我是直接hook了一下 VirtualAlloc 看大内存rwx申请的地址是什么</p>
+<p>0000028780000000</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291641550.png" srcset="/img/loading.gif" lazyload alt="image-20260529164120494"></p>
+<p>然后我们可以将这个地址 存入到全局变量后面再将其抹除PE头，我们可以看到第二次调用virtualAlloc的时候就是申请的这个大内存，那么第一次呢？？第一次是我写的hook_loader申请的</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291642466.png" srcset="/img/loading.gif" lazyload alt="image-20260529164243401"></p>
+<p>随后我写的逻辑是在第二次调用申请内存的时候记录地址和大小放在全局变量中，第三次申请的时候 直接开始抹除第二次申请的PE头，写的有点直接，但是这只是初步试探的过程，后续确</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291644861.png" srcset="/img/loading.gif" lazyload alt="image-20260529164455804"></p>
+<p>此时我们再运行可以看到成功抹除了</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435788.png" srcset="/img/loading.gif" lazyload alt="image-20260529164930164"></p>
+<p>但是运行命令一样会被查杀</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435684.png" srcset="/img/loading.gif" lazyload alt="image-20260529165211725"></p>
+<p>那么为什么呢？？？</p>
+<h1 id="5-查看安全日志确定突破口"><a href="#5-查看安全日志确定突破口" class="headerlink" title="5.查看安全日志确定突破口"></a>5.查看安全日志确定突破口</h1><p>第一个查杀 </p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291653402.png" srcset="/img/loading.gif" lazyload alt="image-20260529165315353"></p>
+<p>第二个内存查杀</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435442.png" srcset="/img/loading.gif" lazyload alt="image-20260529165400457"></p>
+<p>第三个内存查杀</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435562.png" srcset="/img/loading.gif" lazyload alt="image-20260529165454684"></p>
+<p>发现了吗？？？他们的虚拟地址是一样的都是0x0000000067700000</p>
+<p>我们再运行一下看看该内存</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291657166.png" srcset="/img/loading.gif" lazyload alt="image-20260529165712108"></p>
+<p>也是很明显的一个PE结构的内存，但是内存属性为RW。研究一下这个吧</p>
+<p>加上或这个条件</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435105.png" srcset="/img/loading.gif" lazyload alt="image-20260529165857723"></p>
+<p>再看一下0x0000000067700000</p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs nix">[<span class="hljs-operator">*</span>] VirtualAlloc EXE <span class="hljs-params">page:</span> <span class="hljs-number">0000000067700000</span>  <span class="hljs-params">size:</span> <span class="hljs-number">8208384</span><br>[<span class="hljs-operator">*</span>] VirtualAlloc <span class="hljs-params">flAllocationType :</span> <span class="hljs-number">12288</span>  <span class="hljs-params">flProtect:</span> <span class="hljs-number">4</span><br>virtualNumber is <span class="hljs-number">262</span><br>[<span class="hljs-operator">*</span>] VirtualAlloc EXE <span class="hljs-params">page:</span> <span class="hljs-number">0000000067700000</span>  <span class="hljs-params">size:</span> <span class="hljs-number">1024</span><br>[<span class="hljs-operator">*</span>] VirtualAlloc <span class="hljs-params">flAllocationType :</span> <span class="hljs-number">4096</span>  <span class="hljs-params">flProtect:</span> <span class="hljs-number">4</span><br>virtualNumber is <span class="hljs-number">263</span><br><br></code></pre></td></tr></table></figure>
+
+
+
+<p>以可读可写的权限先以0000000067700000为基质申请了一片大内存 然后再在这之中申请了一个小内存</p>
+<p>再加上内存中这是一个PE程序，他应该是先申请了一个rw的程序 再将PE写入内存然后伸展修复，再修复各节的属性。</p>
+<p>这也是很常规的一个操作了</p>
+<p>于是我们再hook一下 virtualprotec api来查看</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">virtualNumber</span> is <span class="hljs-number">241</span><br><span class="hljs-attribute">lpAddress</span> is <span class="hljs-number">0000000067701000</span> dwsize is <span class="hljs-number">3265024</span>,flNewProtect is <span class="hljs-number">32</span>,lpflOldProtect is <span class="hljs-number">563084636</span><br><span class="hljs-attribute">protectNum</span> is <span class="hljs-number">3</span><br><span class="hljs-attribute">lpAddress</span> is <span class="hljs-number">0000000067</span>A1F000 dwsize is <span class="hljs-number">262656</span>,flNewProtect is <span class="hljs-number">4</span>,lpflOldProtect is <span class="hljs-number">563084636</span><br><span class="hljs-attribute">protectNum</span> is <span class="hljs-number">4</span><br><span class="hljs-attribute">lpAddress</span> is <span class="hljs-number">0000000067</span>A60000 dwsize is <span class="hljs-number">4177920</span>,flNewProtect is <span class="hljs-number">2</span>,lpflOldProtect is <span class="hljs-number">563084636</span><br><span class="hljs-attribute">protectNum</span> is <span class="hljs-number">5</span><br><span class="hljs-attribute">lpAddress</span> is <span class="hljs-number">0000000067</span>E5C000 dwsize is <span class="hljs-number">2560</span>,flNewProtect is <span class="hljs-number">2</span>,lpflOldProtect is <span class="hljs-number">563084636</span><br><span class="hljs-attribute">protectNum</span> is <span class="hljs-number">6</span><br><span class="hljs-attribute">lpAddress</span> is <span class="hljs-number">0000000067</span>E5D000 dwsize is <span class="hljs-number">2048</span>,flNewProtect is <span class="hljs-number">2</span>,lpflOldProtect is <span class="hljs-number">563084636</span><br><span class="hljs-attribute">protectNum</span> is <span class="hljs-number">7</span><br><span class="hljs-attribute">lpAddress</span> is <span class="hljs-number">0000000067</span>E5E000 dwsize is <span class="hljs-number">399872</span>,flNewProtect is <span class="hljs-number">4</span>,lpflOldProtect is <span class="hljs-number">563084636</span><br><span class="hljs-attribute">protectNum</span> is <span class="hljs-number">8</span><br><span class="hljs-attribute">lpAddress</span> is <span class="hljs-number">0000000067</span>EC0000 dwsize is <span class="hljs-number">512</span>,flNewProtect is <span class="hljs-number">2</span>,lpflOldProtect is <span class="hljs-number">563084636</span><br><span class="hljs-attribute">protectNum</span> is <span class="hljs-number">9</span><br><span class="hljs-attribute">lpAddress</span> is <span class="hljs-number">0000000067</span>EC1000 dwsize is <span class="hljs-number">5120</span>,flNewProtect is <span class="hljs-number">4</span>,lpflOldProtect is <span class="hljs-number">563084636</span><br><span class="hljs-attribute">protectNum</span> is <span class="hljs-number">10</span><br><span class="hljs-attribute">lpAddress</span> is <span class="hljs-number">0000000067</span>EC3000 dwsize is <span class="hljs-number">512</span>,flNewProtect is <span class="hljs-number">4</span>,lpflOldProtect is <span class="hljs-number">563084636</span><br><span class="hljs-attribute">protectNum</span> is <span class="hljs-number">11</span><br><span class="hljs-attribute">lpAddress</span> is <span class="hljs-number">0000000067</span>EC4000 dwsize is <span class="hljs-number">512</span>,flNewProtect is <span class="hljs-number">4</span>,lpflOldProtect is <span class="hljs-number">563084636</span><br><span class="hljs-attribute">protectNum</span> is <span class="hljs-number">12</span><br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th align="left">#</th>
+<th align="left">地址</th>
+<th align="left">大小</th>
+<th align="left">新属性</th>
+<th align="left">解读</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">3</td>
+<td align="left"><code>0x67701000</code></td>
+<td align="left">~3.1 MB</td>
+<td align="left"><code>0x20</code> (EXECUTE_READ)</td>
+<td align="left"><strong>代码段</strong>：可执行+只读，典型的 <code>.text</code> 段属性</td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="left"><code>0x67A1F000</code></td>
+<td align="left">~256 KB</td>
+<td align="left"><code>0x04</code> (READWRITE)</td>
+<td align="left"><strong>数据段</strong>：可读写，可能是 <code>.data</code> 或堆</td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="left"><code>0x67A60000</code></td>
+<td align="left">~4.0 MB</td>
+<td align="left"><code>0x02</code> (READONLY)</td>
+<td align="left"><strong>只读数据</strong>：可能是 <code>.rdata</code> 或资源段</td>
+</tr>
+<tr>
+<td align="left">6</td>
+<td align="left"><code>0x67E5C000</code></td>
+<td align="left">2.5 KB</td>
+<td align="left"><code>0x02</code> (READONLY)</td>
+<td align="left">小块只读数据</td>
+</tr>
+<tr>
+<td align="left">7</td>
+<td align="left"><code>0x67E5D000</code></td>
+<td align="left">2.0 KB</td>
+<td align="left"><code>0x02</code> (READONLY)</td>
+<td align="left">同上，可能是导入表&#x2F;重定位表的一部分</td>
+</tr>
+<tr>
+<td align="left">8</td>
+<td align="left"><code>0x67E5E000</code></td>
+<td align="left">~390 KB</td>
+<td align="left"><code>0x04</code> (READWRITE)</td>
+<td align="left">可读写数据段</td>
+</tr>
+<tr>
+<td align="left">9</td>
+<td align="left"><code>0x67EC0000</code></td>
+<td align="left">512 B</td>
+<td align="left"><code>0x02</code> (READONLY)</td>
+<td align="left">极小块，可能是某个表&#x2F;结构的头部</td>
+</tr>
+<tr>
+<td align="left">10</td>
+<td align="left"><code>0x67EC1000</code></td>
+<td align="left">5 KB</td>
+<td align="left"><code>0x04</code> (READWRITE)</td>
+<td align="left">小块可读写数据</td>
+</tr>
+<tr>
+<td align="left">11</td>
+<td align="left"><code>0x67EC3000</code></td>
+<td align="left">512 B</td>
+<td align="left"><code>0x04</code> (READWRITE)</td>
+<td align="left">同上</td>
+</tr>
+<tr>
+<td align="left">12</td>
+<td align="left"><code>0x67EC4000</code></td>
+<td align="left">512 B</td>
+<td align="left"><code>0x04</code> (READWRITE)</td>
+<td align="left">同上</td>
+</tr>
+</tbody></table>
+<p>这能证明  这是PE 文件内存映射后的节区属性修复。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291720231.png" srcset="/img/loading.gif" lazyload alt="image-20260529172050173"></p>
+<p>我们尝试抹除这片区域的PE头，因为这个地址申请的是固定的0000000067700000，这样就更简单了。</p>
+<p>我直接通过CreateTimerQueueTimer创建一个时间回调执行，过5秒后抹除	该地址PE头</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435129.png" srcset="/img/loading.gif" lazyload alt="image-20260529172234121"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435229.png" srcset="/img/loading.gif" lazyload alt="image-20260529172205525"></p>
+<p>运行程序看见Hack The Planet 这个标志就代码已经成功抹除</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435187.png" srcset="/img/loading.gif" lazyload alt="image-20260529172329638"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435085.png" srcset="/img/loading.gif" lazyload alt="image-20260529172413843"></p>
+<p>此时再执行命令就不会被查杀</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291724839.png" srcset="/img/loading.gif" lazyload alt="image-20260529172454763"></p>
+<p>这就是很简单的手法达成的内存查杀，当然实战中我们还是最后利用veh+sleep做成sleepmask这种吧，毕竟vshell好像没有睡眠机制，为什么呢？？？因为我hook了sleep发现并没有运行sleep</p>
+<p>与此同时交互式的终端运行命令也修复了，交互式运行命令也不会被查杀</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291728392.png" srcset="/img/loading.gif" lazyload alt="image-20260529172802310"></p>
+<p>9</p>
+<h1 id="6-最终演示视频"><a href="#6-最终演示视频" class="headerlink" title="6.最终演示视频"></a>6.最终演示视频</h1><p>相比较原来的免杀的加载器 只添加一个回调函数</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435557.png" srcset="/img/loading.gif" lazyload alt="image-20260529174853939"></p>
+<p>一个时间序列5秒后调用，就能简单绕过内存查杀 </p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605291749000.png" srcset="/img/loading.gif" lazyload alt="image-20260529174937942"></p>
+<h1 id="7-番外"><a href="#7-番外" class="headerlink" title="7.番外"></a>7.番外</h1><p>我问了一下我朋友，不仅仅vshell的这片地址申请固定，cs的stager有一片地址申请的也是固定的</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301435601.png" srcset="/img/loading.gif" lazyload alt="image-20260529174636928"></p>
+<p>当然后续vshell的内存免杀，就可以仿造着sleepmask那样 通过veh异常处理+CreateTimerQueue创建时间序列实现 内存属性浮动和休眠加密 执行解密。毕竟这样直接抹除PE头的手法还是太暴力了。哈哈</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%85%8D%E6%9D%80/" class="print-no-link">#免杀</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>《简单的vshell绕过火绒内存查杀》</div>
+      <div>http://example.com/2026/05/30/《简单的vshell绕过火绒内存查杀》/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>May 30, 2026</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/05/30/%E3%80%8Aring3%E5%B1%82%E6%91%98%E5%8F%96%E4%BB%A4%E7%89%8C%E8%87%B4%E7%9B%B2%E7%81%AB%E7%BB%92%E3%80%8B/" title="《ring3层摘取令牌致盲火绒》">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">《ring3层摘取令牌致盲火绒》</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/08/%E3%80%8ARegPwn%E5%88%86%E6%9E%90%E5%92%8C%E5%A4%8D%E7%8E%B0%E3%80%8B/" title="《RegPwn分析和复现》">
+                        <span class="hidden-mobile">《RegPwn分析和复现》</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

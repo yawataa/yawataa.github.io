@@ -1,0 +1,692 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="1.前言连续两天更新了，兄弟们，能不能说一句yawataa勤政。今天就讲讲怎么ring3层致盲火绒吧，这是一个很老的技术，大概22年的时候就有公开文章进行讲解了，不过关它针对的是defend，在我实际测试中依然对火绒有效（2月份的时候就已经发现依然有效了，但是我一直不太想更新，哈哈，因为写东西也比较麻烦，再加上这个其实国内也有很多大佬师傅早就讲过了）。 2.背景介绍这个技术大概是首发在elasti">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《ring3层摘取令牌致盲火绒》">
+<meta property="og:url" content="http://example.com/2026/05/30/%E3%80%8Aring3%E5%B1%82%E6%91%98%E5%8F%96%E4%BB%A4%E7%89%8C%E8%87%B4%E7%9B%B2%E7%81%AB%E7%BB%92%E3%80%8B/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="1.前言连续两天更新了，兄弟们，能不能说一句yawataa勤政。今天就讲讲怎么ring3层致盲火绒吧，这是一个很老的技术，大概22年的时候就有公开文章进行讲解了，不过关它针对的是defend，在我实际测试中依然对火绒有效（2月份的时候就已经发现依然有效了，但是我一直不太想更新，哈哈，因为写东西也比较麻烦，再加上这个其实国内也有很多大佬师傅早就讲过了）。 2.背景介绍这个技术大概是首发在elasti">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301119083.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301142148.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301147349.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301155951.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301157019.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301204777.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301204484.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301205918.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301207193.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301208584.png">
+<meta property="article:published_time" content="2026-05-30T06:39:07.000Z">
+<meta property="article:modified_time" content="2026-05-30T06:43:02.567Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="免杀">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301119083.png">
+  
+  
+  
+  <title>《ring3层摘取令牌致盲火绒》 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>yawataa</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>Links</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/sun.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="《ring3层摘取令牌致盲火绒》"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-05-30 14:39" pubdate>
+          May 30, 2026 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.4k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          13 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">《ring3层摘取令牌致盲火绒》</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="1-前言"><a href="#1-前言" class="headerlink" title="1.前言"></a>1.前言</h1><p>连续两天更新了，兄弟们，能不能说一句yawataa勤政。今天就讲讲怎么ring3层致盲火绒吧，这是一个很老的技术，大概22年的时候就有公开文章进行讲解了，不过关它针对的是defend，在我实际测试中依然对火绒有效（2月份的时候就已经发现依然有效了，但是我一直不太想更新，哈哈，因为写东西也比较麻烦，再加上这个其实国内也有很多大佬师傅早就讲过了）。</p>
+<h1 id="2-背景介绍"><a href="#2-背景介绍" class="headerlink" title="2.背景介绍"></a>2.背景介绍</h1><p>这个技术大概是首发在elastic的一篇研究文章(<a target="_blank" rel="noopener" href="https://elastic.github.io/security-research/whitepapers/2022/02/02.sandboxing-antimalware-products-for-fun-and-profit/article/%EF%BC%89%EF%BC%8C%E4%BD%86%E6%98%AF%E7%8E%B0%E5%9C%A8%E7%9A%84%E8%AF%9D%E5%B7%B2%E7%BB%8F%E6%89%BE%E4%B8%8D%E5%88%B0%E4%BA%86%E3%80%82%E7%8E%B0%E6%88%90%E7%9A%84%E9%A1%B9%E7%9B%AE%E8%BF%98%E8%83%BD%E6%89%BE%E5%88%B0%E4%BB%A3%E7%A0%81">https://elastic.github.io/security-research/whitepapers/2022/02/02.sandboxing-antimalware-products-for-fun-and-profit/article/），但是现在的话已经找不到了。现成的项目还能找到代码</a></p>
+<ol>
+<li>pwn1sher&#x2F;KillDefender最早放出来的 PoC，直接对 MsMpEng.exe 调用  OpenProcessToken + AdjustTokenPrivileges + SetTokenInformation ，把令牌权限全部移除并把完整性设为 Untrusted，Defender 会立即“哑巴”。需要 SYSTEM 权限才能运行。<br>仓库地址：<a target="_blank" rel="noopener" href="https://github.com/pwn1sher/KillDefender">https://github.com/pwn1sher/KillDefender</a></li>
+<li>Octoberfest7&#x2F;KillDefender<br>在前者基础上做了代码整理与稳定性改进，同样通过“剥光”令牌权限让 Defender 失效，也是 SYSTEM 权限前提。<br>仓库地址：<a target="_blank" rel="noopener" href="https://github.com/Octoberfest7/KillDefender">https://github.com/Octoberfest7/KillDefender</a> </li>
+<li>Octoberfest7&#x2F;KDStab<br>把 KillDefender 的剥令牌逻辑做成 Cobalt Strike 的 BOF（Beacon Object File），方便在红队行动中内存加载执行，进一步降低落地被杀风险。<br>仓库地址：<a target="_blank" rel="noopener" href="https://github.com/Octoberfest7/KDStab">https://github.com/Octoberfest7/KDStab</a></li>
+</ol>
+<p>并且原来的文章我找到了pdf存档</p>
+<p><a target="_blank" rel="noopener" href="https://archive.orkl.eu/60c5c1324abb7a0057fb05322fae83d783810ac2.pdf">https://archive.orkl.eu/60c5c1324abb7a0057fb05322fae83d783810ac2.pdf</a></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301119083.png" srcset="/img/loading.gif" lazyload alt="image-20260530111857925"></p>
+<h1 id="3-简单介绍原理"><a href="#3-简单介绍原理" class="headerlink" title="3.简单介绍原理"></a>3.简单介绍原理</h1><p>Windows 令牌（Token）是一种安全凭证。它标识了你的身份以及你被允许执行的操作。通常情况下，当用户运行一个进程时，该进程会以该用户的令牌运行，并可以执行该用户能够执行的任何操作。令牌中一些最重要的数据包括：</p>
+<ul>
+<li><strong>用户身份</strong></li>
+<li><strong>组成员身份</strong>（例如：Administrators）</li>
+<li><strong>特权</strong>（例如：SeDebugPrivilege）</li>
+<li><strong>完整性级别</strong>（Integrity level）</li>
+</ul>
+<p>令牌是 Windows 授权的关键部分。每当 Windows 线程访问一个可安全对象（securable object）时，操作系统都会执行安全检查。它会将线程的有效令牌（effective token）与被访问对象的访问控制描述符（Access Control Descriptor, ACD）进行比较。</p>
+<p>你可以在以下资源中了解更多关于令牌的内容：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-cn/windows/win32/secauthz/access-tokens">Microsoft 访问令牌文档</a></li>
+</ul>
+<p>Windows 提供的 OpenProcessToken 用于获取进程令牌的句柄。MSDN 文档声称，调用者必须拥有 PROCESS_QUERY_INFORMATION 权限；对受 PPL（Protected Process Light）保护的进程，则只能拿到 PROCESS_QUERY_LIMITED_INFORMATION——似乎意味着“拿不到完整令牌”。<br>但文档写得并不准确。实测表明，仅凭 PROCESS_QUERY_LIMITED_INFORMATION 就足以调用 OpenProcessToken 成功，把 PPL 进程的令牌句柄拿回来。James Forshaw 曾在一篇文章里用内核反编译代码解释过这一偏差：NtOpenProcessToken 实际只校验进程句柄的最低限度访问权，而不管你是不是“受限信息”级别。<br>拿到句柄只是第一步。令牌本身也是一个带有安全描述符的可受保护对象，后续任何操作（TOKEN_QUERY、TOKEN_WRITE、TOKEN_IMPERSONATE…）都要再走一次常规访问检查：系统会把调用线程当前有效令牌的权限，与目标令牌安全描述符里要求的访问权限做比对，只有比对通过才真正授予对应权限。换句话来说OpenProcessToken 的门槛比文档低。</p>
+<p>总结成一句话就是，我们的Openprocess还是可以拿到PPL进程的令牌，我们可以将令牌的权限全部移除从而达到致盲的效果。（之前了）</p>
+<p>用这种技术，攻击者可以强制移除杀软令牌中的所有特权，并将其完整性级别从 System 降至 Untrusted。</p>
+<p>被削弱到 Untrusted 完整性级别后，受害进程将无法访问系统上的大多数可安全对象资源，从而在不终止进程的情况下悄然使其丧失能力。</p>
+<p>Elastic从 2022 年 1 月 5 日向微软安全响应中心（MSRC）披露了这个漏洞，并提出了修复方案。微软他们在 2022 年 1 月 24 日回复称，他们认为该漏洞的严重程度为中等，不会通过安全更新来处理。不过，他们可能会在未来版本的 Windows 中处理这个问题。</p>
+<p>当然这种思路对我们的非PPL进程也肯定有用（火绒）</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301142148.png" srcset="/img/loading.gif" lazyload alt="image-20260530114210073">国内的话其实也早就有师傅提出和讲解这个漏洞来致盲杀软了，比如老鑫师傅在24年的公众号中列举的手法就包括这一项</p>
+<p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/iwF92aEaAD5TVsvnan9SJQ?scene=1">https://mp.weixin.qq.com/s/iwF92aEaAD5TVsvnan9SJQ?scene=1</a></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301147349.png" srcset="/img/loading.gif" lazyload alt="image-20260530114735262"></p>
+<h1 id="4-演示"><a href="#4-演示" class="headerlink" title="4.演示"></a>4.演示</h1><p>完整代码</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/Octoberfest7/KillDefender">https://github.com/Octoberfest7/KillDefender</a> </p>
+<p>简单把defend名字改成火绒的就可以了</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301155951.png" srcset="/img/loading.gif" lazyload alt="image-20260530115529887"></p>
+<p>未运行前，火绒令牌完整性为system</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301157019.png" srcset="/img/loading.gif" lazyload alt="image-20260530115728935"></p>
+<p>然后我们使用未做任何内存处理的loader上线执行命令 验证火绒的内存查杀功能有效</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301204777.png" srcset="/img/loading.gif" lazyload alt="image-20260530120402709"></p>
+<p>然后我们开始尝试运行致盲火绒程序</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301204484.png" srcset="/img/loading.gif" lazyload></p>
+<p>此时火绒的令牌完整性降低为不可信</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301205918.png" srcset="/img/loading.gif" lazyload alt="image-20260530120527849"></p>
+<p>此时点击快速查杀则会发现根本没有用处，上线再执行命令就不会被内存查杀</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301207193.png" srcset="/img/loading.gif" lazyload alt="image-20260530120711127"></p>
+<p>但是文件实时防护没有失效，因为文件实时防护利用的是微过滤驱动（我们fltmc可以看见，也有手法利用这个机制致盲的，后面我再写）</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202605301208584.png" srcset="/img/loading.gif" lazyload alt="image-20260530120845531"></p>
+<h2 id="完整视频："><a href="#完整视频：" class="headerlink" title="完整视频："></a>完整视频：</h2><p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/fPFFxChF4CvadNAnAbPKIQ">https://mp.weixin.qq.com/s/fPFFxChF4CvadNAnAbPKIQ</a></p>
+<h1 id="5-最后的最后"><a href="#5-最后的最后" class="headerlink" title="5.最后的最后"></a>5.最后的最后</h1><p>我也不知道为什么 这么久了依然没有修复这个问题，哈哈。不过希望大家关注一手yawataa，已经燃尽了更新了两天，后面遇到有意思的或者是心血来潮再继续更新吧。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%85%8D%E6%9D%80/" class="print-no-link">#免杀</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>《ring3层摘取令牌致盲火绒》</div>
+      <div>http://example.com/2026/05/30/《ring3层摘取令牌致盲火绒》/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>May 30, 2026</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/05/30/%E3%80%8A%E7%AE%80%E5%8D%95%E7%9A%84vshell%E7%BB%95%E8%BF%87%E7%81%AB%E7%BB%92%E5%86%85%E5%AD%98%E6%9F%A5%E6%9D%80%E3%80%8B/" title="《简单的vshell绕过火绒内存查杀》">
+                        <span class="hidden-mobile">《简单的vshell绕过火绒内存查杀》</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
