@@ -1,0 +1,721 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="前言欧克啊，也是好久没有写文章发公众号了，主播最近忙着在秋招找工作呢，当然更多的也是在摸鱼。同时也不知道写什么，因为翻来覆去自己也没有找到什么比较分享的东西，与其输出同质化的东西，不如选择自己摸鱼先爽一下。 起因原文：https:&#x2F;&#x2F;trainsec.net&#x2F;library&#x2F;windows-internals&#x2F;dll-injection-with-setwineventhook-the-acces">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《利用SetWinEventHook进行DLL注入-R3层终止杀软进程》">
+<meta property="og:url" content="http://example.com/2026/10/27/%E3%80%8A%E5%88%A9%E7%94%A8SetWinEventHook%E8%BF%9B%E8%A1%8CDLL%E6%B3%A8%E5%85%A5-R3%E5%B1%82%E7%BB%88%E6%AD%A2%E6%9D%80%E8%BD%AF%E8%BF%9B%E7%A8%8B%E3%80%8B/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="前言欧克啊，也是好久没有写文章发公众号了，主播最近忙着在秋招找工作呢，当然更多的也是在摸鱼。同时也不知道写什么，因为翻来覆去自己也没有找到什么比较分享的东西，与其输出同质化的东西，不如选择自己摸鱼先爽一下。 起因原文：https:&#x2F;&#x2F;trainsec.net&#x2F;library&#x2F;windows-internals&#x2F;dll-injection-with-setwineventhook-the-acces">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2026/png/52636441/1792735316747-5a4b5b9b-b175-4ad8-abcc-84ada2dc2209.png">
+<meta property="article:published_time" content="2026-10-27T13:39:14.000Z">
+<meta property="article:modified_time" content="2026-10-27T13:39:58.426Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="免杀">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2026/png/52636441/1792735316747-5a4b5b9b-b175-4ad8-abcc-84ada2dc2209.png">
+  
+  
+  
+  <title>《利用SetWinEventHook进行DLL注入-R3层终止杀软进程》 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>yawataa</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>Links</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/sun.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="《利用SetWinEventHook进行DLL注入-R3层终止杀软进程》"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-27 21:39" pubdate>
+          October 27, 2026 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.1k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          10 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">《利用SetWinEventHook进行DLL注入-R3层终止杀软进程》</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>欧克啊，也是好久没有写文章发公众号了，主播最近忙着在秋招找工作呢，当然更多的也是在摸鱼。同时也不知道写什么，因为翻来覆去自己也没有找到什么比较分享的东西，与其输出同质化的东西，不如选择自己摸鱼先爽一下。</p>
+<h1 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h1><p>原文：<a target="_blank" rel="noopener" href="https://trainsec.net/library/windows-internals/dll-injection-with-setwineventhook-the-accessibility-hook-as-an-injector/">https://trainsec.net/library/windows-internals/dll-injection-with-setwineventhook-the-accessibility-hook-as-an-injector/</a></p>
+<p>《Windows Internals 第 7 版，第 1 部分》的合著者、以及《Windows Native API 编程》一书的作者帕维尔·约西福维奇，又为现有的注入技术列表添加了一项</p>
+<p>这项技术利用了 SetWinEventHook 这个 API 来实现，该 API 原本是用于实现无障碍功能的。它的使用方式与 SetWindowsHookEx 类似：你无需手动向目标进程写入任何数据。只需注册一些用户界面事件，将 DLL 交给 Windows 系统，系统会自动将该 DLL 加载到触发这些事件的进程中。</p>
+<h1 id="简单介绍"><a href="#简单介绍" class="headerlink" title="简单介绍"></a>简单介绍</h1><p><code>SetWinEventHook</code> 原本是辅助功能（Accessibility） API，屏幕阅读器用它订阅 UI 事件。<br>但当它和 <code>WINEVENT_INCONTEXT</code> 标志、一个 DLL 模块一起使用时，就变成了一种 DLL 注入手段：</p>
+<ul>
+<li>注入器不打开目标进程句柄，不写内存，不创建远程线程；</li>
+<li>只需要把 DLL 在自己进程里 <code>LoadLibrary</code> 一次，拿到模块句柄和导出函数地址；</li>
+<li>剩下的加载和执行，由 user32 自己在目标进程里完成；</li>
+<li>触发条件是：目标进程自己的线程产生一个 UI 事件。</li>
+</ul>
+<h3 id="WinEvent-是什么"><a href="#WinEvent-是什么" class="headerlink" title="WinEvent 是什么"></a><font style="color:rgb(51, 51, 51);">WinEvent 是什么</font></h3><p>Windows 的 UI（窗口、菜单、控件）发生变化时，user32 会产生“WinEvent”，例如：</p>
+<table>
+<thead>
+<tr>
+<th>事件</th>
+<th>值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>EVENT_SYSTEM_FOREGROUND</code></td>
+<td>0x0003</td>
+<td>前台窗口切换</td>
+</tr>
+<tr>
+<td><code>EVENT_OBJECT_CREATE</code></td>
+<td>0x8000</td>
+<td>对象创建</td>
+</tr>
+<tr>
+<td><code>EVENT_OBJECT_SHOW</code></td>
+<td>0x8002</td>
+<td>对象显示</td>
+</tr>
+<tr>
+<td><code>EVENT_OBJECT_HIDE</code></td>
+<td>0x8003</td>
+<td>对象隐藏</td>
+</tr>
+<tr>
+<td><code>EVENT_OBJECT_LOCATIONCHANGE</code></td>
+<td>0x800B</td>
+<td>位置&#x2F;大小变化</td>
+</tr>
+<tr>
+<td><code>EVENT_OBJECT_NAMECHANGE</code></td>
+<td>0x800C</td>
+<td>名称&#x2F;标题变化</td>
+</tr>
+</tbody></table>
+<p>这些事件是通过 <code>NotifyWinEvent</code> 从<strong>用户态线程</strong>发出的，屏幕阅读器、自动化工具靠订阅它们<br>来感知界面变化。</p>
+<h3 id="SetWinEventHook-的两种投递方式"><a href="#SetWinEventHook-的两种投递方式" class="headerlink" title="SetWinEventHook 的两种投递方式"></a><font style="color:rgb(51, 51, 51);">SetWinEventHook 的两种投递方式</font></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs plain">HWINEVENTHOOK SetWinEventHook(<br>  DWORD        eventMin,          // 事件范围起点，如 EVENT_MIN<br>  DWORD        eventMax,          // 事件范围终点，如 EVENT_MAX<br>  HMODULE      hmodWinEventProc,  // 回调所在模块<br>  WINEVENTPROC pfnWinEventProc,   // 回调函数地址<br>  DWORD        idProcess,         // 只看哪个进程（0 = 全部）<br>  DWORD        idThread,          // 只看哪个线程（0 = 全部）<br>  DWORD        dwFlags            // 投递方式<br>);<br></code></pre></td></tr></table></figure>
+
+<p><em>关键只有 <em><code>dwFlags</code></em> 一个参数：</em>*</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>行为</th>
+<th>是否注入</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>WINEVENT_OUTOFCONTEXT</code></td>
+<td>事件被<strong>编组回调用进程</strong>，通过隐藏窗口 + 消息队列投递。调用线程必须有消息泵（<code>GetMessage</code> + <code>DispatchMessage</code>）</td>
+<td>❌ 不注入</td>
+</tr>
+<tr>
+<td><code>WINEVENT_INCONTEXT</code></td>
+<td>回调必须在 DLL 里；<strong>系统把 DLL 加载进“产生事件的那个进程”</strong>，并在那里调用回调</td>
+<td>✅ 就是注入<br/><br/></td>
+</tr>
+</tbody></table>
+<p>更多的细节可以在作者原文的中了解，这里主播就不再过多啰嗦了</p>
+<p>原文：<a target="_blank" rel="noopener" href="https://trainsec.net/library/windows-internals/dll-injection-with-setwineventhook-the-accessibility-hook-as-an-injector/">https://trainsec.net/library/windows-internals/dll-injection-with-setwineventhook-the-accessibility-hook-as-an-injector/</a></p>
+<h1 id="简单的发散思维"><a href="#简单的发散思维" class="headerlink" title="简单的发散思维"></a>简单的发散思维</h1><p>也算是抛砖引玉了，看见这个技术一下就想到了可以注入杀软托盘程序，然后利用注入的进程关闭杀软。</p>
+<p>原因如下</p>
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs autohotkey"><span class="hljs-number">1</span>. `SetWinEventHook` 是辅助功能（Accessibility）API，屏幕阅读器每天都在用。整个调用序列里没有 `OpenProcess`、`WriteProcessMemory`、`CreateRemoteThread`、`VirtualAllocEx` —— 这些正是自保护驱动重点监控的行为。在系统看来，这只是一个程序注册了 UI 事件钩子。<br><br><span class="hljs-number">2</span>. 注入器只做了两件事：`LoadLibrary` 自己的 DLL、`SetWinEventHook`。DLL 的加载动作是 user32 在目标进程内部完成的，不需要注入器持有目标进程句柄。自保护最常见的第一道防线是 `ObRegisterCallbacks`：在 `OpenProcess` 时剥离 `PROCESS_VM_WRITE` / `PROCESS_CREATE_THREAD` 等权限。这条路径在这里根本没有被走到，所以没有可拦截的点。<br><br><span class="hljs-number">3</span>. 触发事件的是目标进程自己的线程（点击、悬停、菜单……），user32 在这个线程的上下文里加载 DLL 并调用导出函数。对目标进程来说，这更像一次普通的模块加载，而不是“外部线程突然出现在自己的地址空间里”。<br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="结果演示"><a href="#结果演示" class="headerlink" title="结果演示"></a>结果演示</h1><p><font style="color:rgb(51, 51, 51);">DLL 被注入到 <code>HipsTray.exe</code>，代码继承宿主的令牌与完整性级别。</font></p>
+<p><font style="color:rgb(51, 51, 51);">从“杀软进程”内部去终止另一个“杀软进程”，在权限模型上和普通进程互杀没有区别。</font></p>
+<p><img src="https://cdn.nlark.com/yuque/0/2026/png/52636441/1792735316747-5a4b5b9b-b175-4ad8-abcc-84ada2dc2209.png" srcset="/img/loading.gif" lazyload></p>
+<p>至于其他杀软和 edr 的测试 就交给大家了 也算抛砖引玉，希望师傅们能够多多提出自己的想法，哈哈。</p>
+<h1 id="最后的最后"><a href="#最后的最后" class="headerlink" title="最后的最后"></a>最后的最后</h1><p>最后的最后就是关注 yawataa，因为主播会不定期诈尸</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%85%8D%E6%9D%80/" class="print-no-link">#免杀</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>《利用SetWinEventHook进行DLL注入-R3层终止杀软进程》</div>
+      <div>http://example.com/2026/10/27/《利用SetWinEventHook进行DLL注入-R3层终止杀软进程》/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>October 27, 2026</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/08/15/LOLBins-%EF%BC%9A%E5%80%9F%E5%B4%A9%E6%BA%83%E8%BD%AC%E5%82%A8%E7%99%BD%E5%90%8D%E5%8D%95%E7%A8%8B%E5%BA%8F%EF%BC%8C%E7%BB%95%E8%BF%87-360-%E6%A0%B8%E6%99%B6-%E5%92%8C%E7%81%AB%E7%BB%92%E6%8B%BF%E4%B8%8B-lsass/" title="LOLBins ：借崩溃转储白名单程序，绕过 360 核晶 和火绒拿下 lsass">
+                        <span class="hidden-mobile">LOLBins ：借崩溃转储白名单程序，绕过 360 核晶 和火绒拿下 lsass</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
